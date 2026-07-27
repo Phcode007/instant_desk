@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
@@ -12,5 +12,14 @@ export class TicketService {
 
   async findAll(): Promise<Ticket[]> {
     return await this.ticketRepository.find();
+  }
+
+  async findById(id: number): Promise<Ticket> {
+    const ticket = await this.ticketRepository.findOne({ where: { id } });
+
+    if (!ticket) {
+      throw new HttpException('Ticket não encontrado', HttpStatus.NOT_FOUND);
+    }
+    return ticket;
   }
 }
