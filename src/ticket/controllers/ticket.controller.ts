@@ -24,4 +24,9 @@ export class TicketController {
   fnidById(@Param('id', ParseIntPipe) id: number): Promise<Ticket> {
     return this.ticketService.findById(id);
   }
+  @Get('/descricao/: descricao')
+  @HttpCode(HttpStatus.OK)
+  findByDescricao(@Param('descricao') descricao: string): Promise<Ticket[]> {
+    return this.ticketService.findByDescricao(descricao);
+  }
 }

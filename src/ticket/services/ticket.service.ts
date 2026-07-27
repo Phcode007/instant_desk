@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
 
 @Injectable()
@@ -21,5 +21,10 @@ export class TicketService {
       throw new HttpException('Ticket não encontrado', HttpStatus.NOT_FOUND);
     }
     return ticket;
+  }
+  async findByDescricao(descricao: string): Promise<Ticket[]> {
+    return await this.ticketRepository.find({
+      where: { descricao: ILike(`%${descricao}%`) },
+    });
   }
 }
