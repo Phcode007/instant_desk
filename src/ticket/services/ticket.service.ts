@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
+import { DeleteResult } from 'typeorm/browser';
 
 @Injectable()
 export class TicketService {
@@ -35,5 +36,9 @@ export class TicketService {
   async update(ticket: Ticket): Promise<Ticket> {
     await this.findById(ticket.id);
     return await this.ticketRepository.save(ticket);
+  }
+  async delete(id: number): Promise<DeleteResult> {
+    await this.findById(id);
+    return await this.ticketRepository.delete(id);
   }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -41,5 +42,10 @@ export class TicketController {
   @HttpCode(HttpStatus.OK)
   update(@Body() ticket: Ticket): Promise<Ticket> {
     return this.ticketService.update(ticket);
+  }
+  @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.ticketService.delete(id);
   }
 }
