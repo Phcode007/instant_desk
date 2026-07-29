@@ -27,4 +27,8 @@ export class TicketService {
       where: { descricao: ILike(`%${descricao}%`) },
     });
   }
+
+  async create(ticket: Ticket): Promise<Ticket> {
+    return await this.ticketRepository.save(ticket);
+  }
 }

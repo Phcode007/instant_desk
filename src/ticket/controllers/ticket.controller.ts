@@ -1,10 +1,12 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   ParseIntPipe,
+  Post,
 } from '@nestjs/common';
 import { TicketService } from '../services/ticket.service';
 import { Ticket } from '../entities/ticket.entity';
@@ -21,12 +23,17 @@ export class TicketController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  fnidById(@Param('id', ParseIntPipe) id: number): Promise<Ticket> {
+  findById(@Param('id', ParseIntPipe) id: number): Promise<Ticket> {
     return this.ticketService.findById(id);
   }
-  @Get('/descricao/: descricao')
+  @Get('/descricao/:descricao')
   @HttpCode(HttpStatus.OK)
   findByDescricao(@Param('descricao') descricao: string): Promise<Ticket[]> {
     return this.ticketService.findByDescricao(descricao);
+  }
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() ticket: Ticket): Promise<Ticket> {
+    return this.ticketService.create(ticket);
   }
 }
