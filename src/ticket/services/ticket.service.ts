@@ -31,4 +31,9 @@ export class TicketService {
   async create(ticket: Ticket): Promise<Ticket> {
     return await this.ticketRepository.save(ticket);
   }
+
+  async update(ticket: Ticket): Promise<Ticket> {
+    await this.findById(ticket.id);
+    return await this.ticketRepository.save(ticket);
+  }
 }

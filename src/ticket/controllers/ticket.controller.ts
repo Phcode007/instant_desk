@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
 } from '@nestjs/common';
 import { TicketService } from '../services/ticket.service';
 import { Ticket } from '../entities/ticket.entity';
@@ -35,5 +36,10 @@ export class TicketController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() ticket: Ticket): Promise<Ticket> {
     return this.ticketService.create(ticket);
+  }
+  @Put()
+  @HttpCode(HttpStatus.OK)
+  update(@Body() ticket: Ticket): Promise<Ticket> {
+    return this.ticketService.update(ticket);
   }
 }
