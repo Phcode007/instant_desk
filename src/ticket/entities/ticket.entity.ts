@@ -1,7 +1,9 @@
 import { IsNotEmpty } from 'class-validator';
+import { Category } from 'src/category/entities/category.entity';
 import {
   Column,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -24,4 +26,7 @@ export class Ticket {
 
   @UpdateDateColumn()
   data!: Date;
+
+  @ManyToOne(() => Category, (category) => category.ticket)
+  category!: Category;
 }

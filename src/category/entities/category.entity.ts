@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Ticket } from 'src/ticket/entities/ticket.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'tb_categories' })
 export class Category {
@@ -9,4 +10,9 @@ export class Category {
   @IsNotEmpty()
   @Column({ length: 255, nullable: false })
   nome!: string;
+
+  @OneToMany(() => Ticket, (ticket) => ticket.category, {
+    onDelete: 'CASCADE',
+  })
+  ticket!: Ticket[];
 }

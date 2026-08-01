@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
 import { DeleteResult } from 'typeorm/browser';
+import { CategoryService } from 'src/category/services/category.service';
 
 @Injectable()
 export class TicketService {
   constructor(
     @InjectRepository(Ticket)
     private ticketRepository: Repository<Ticket>,
+    private categoryService: CategoryService,
   ) {}
 
   async findAll(): Promise<Ticket[]> {
@@ -30,11 +32,13 @@ export class TicketService {
   }
 
   async create(ticket: Ticket): Promise<Ticket> {
+    await this.categoryService.findById(ticket.category.id);
     return await this.ticketRepository.save(ticket);
   }
 
   async update(ticket: Ticket): Promise<Ticket> {
     await this.findById(ticket.id);
+    await this.categoryService.findById(ticket.category.id);
     return await this.ticketRepository.save(ticket);
   }
   async delete(id: number): Promise<DeleteResult> {
