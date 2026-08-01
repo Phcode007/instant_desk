@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ticket } from './ticket/entities/ticket.entity';
+import { Category } from './category/entities/category.entity';
 import { TicketModule } from './ticket/ticket.module';
 import { CategoryModule } from './category/category.module';
 
@@ -13,7 +14,7 @@ import { CategoryModule } from './category/category.module';
       username: 'postgres',
       password: 'postgres123',
       database: 'db_instant_desk',
-      entities: [Ticket],
+      entities: [Ticket, Category],
       synchronize: true,
     }),
     TicketModule,
