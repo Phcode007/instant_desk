@@ -4,9 +4,10 @@ import { Ticket } from './entities/ticket.entity';
 import { TicketService } from './services/ticket.service';
 import { TicketController } from './controllers/ticket.controller';
 import { CategoryModule } from 'src/category/category.module';
+import { PriorityModule } from 'src/priority/priority.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Ticket]), CategoryModule],
+  imports: [TypeOrmModule.forFeature([Ticket]), CategoryModule, PriorityModule],
   providers: [TicketService],
   controllers: [TicketController],
   exports: [TypeOrmModule],

@@ -4,6 +4,7 @@ import { ILike, Repository } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
 import { DeleteResult } from 'typeorm/browser';
 import { CategoryService } from 'src/category/services/category.service';
+import { PriorityService } from 'src/priority/services/priority.service';
 
 @Injectable()
 export class TicketService {
@@ -11,6 +12,7 @@ export class TicketService {
     @InjectRepository(Ticket)
     private ticketRepository: Repository<Ticket>,
     private categoryService: CategoryService,
+    private priorityService: PriorityService,
   ) {}
 
   async findAll(): Promise<Ticket[]> {
@@ -33,14 +35,17 @@ export class TicketService {
 
   async create(ticket: Ticket): Promise<Ticket> {
     await this.categoryService.findById(ticket.category.id);
+    await this.priorityService.findById(ticket.priority.id);
     return await this.ticketRepository.save(ticket);
   }
 
   async update(ticket: Ticket): Promise<Ticket> {
     await this.findById(ticket.id);
     await this.categoryService.findById(ticket.category.id);
+    await this.priorityService.findById(ticket.priority.id);
     return await this.ticketRepository.save(ticket);
   }
+
   async delete(id: number): Promise<DeleteResult> {
     await this.findById(id);
     return await this.ticketRepository.delete(id);

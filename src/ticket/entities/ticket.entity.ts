@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { Category } from 'src/category/entities/category.entity';
+import { Priority } from 'src/priority/entities/priority.entity';
 import {
   Column,
   Entity,
@@ -29,4 +30,7 @@ export class Ticket {
 
   @ManyToOne(() => Category, (category) => category.ticket)
   category!: Category;
+
+  @ManyToOne(() => Priority, (priority) => priority.ticket)
+  priority!: Priority;
 }

@@ -5,6 +5,7 @@ import { Category } from './category/entities/category.entity';
 import { AuthModule } from './auth/auth.module';
 import { TicketModule } from './ticket/ticket.module';
 import { CategoryModule } from './category/category.module';
+import { PriorityModule } from './priority/priority.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CategoryModule } from './category/category.module';
     TicketModule,
     CategoryModule,
     AuthModule,
+    PriorityModule,
   ],
   controllers: [],
   providers: [],
