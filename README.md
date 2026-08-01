@@ -1,98 +1,143 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Instant Desk
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Sistema de Help Desk desenvolvido como projeto de estudo, aplicando os conceitos do bootcamp (baseado no guia "Blog Pessoal") adaptados para o domínio de gestão de chamados/tickets de suporte.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Sobre o projeto
 
-## Description
+O Instant Desk permite abrir, categorizar, priorizar e acompanhar tickets de suporte, com comentários e anexos associados a cada chamado. O objetivo principal é praticar a construção de uma API REST completa com NestJS, TypeORM e PostgreSQL, seguindo boas práticas de arquitetura em camadas (controller → service → repository).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tecnologias utilizadas
 
-## Project setup
+- **[NestJS](https://nestjs.com/)** — framework Node.js para construção da API
+- **[TypeORM](https://typeorm.io/)** — ORM para mapeamento objeto-relacional
+- **[PostgreSQL](https://www.postgresql.org/)** — banco de dados relacional
+- **[class-validator](https://github.com/typestack/class-validator)** — validação de DTOs/entidades
+- **TypeScript**
 
-```bash
-$ npm install
+## Modelo de dados
+
+O sistema é organizado em torno da entidade `Ticket`, que se relaciona com `Category` e `Priority`. Cada `Ticket` é aberto por um `User` (que possui um `Role`) e pode receber vários `Comment`, cada um podendo ter `Attachment`.
+
+```
+Category ──┐
+Priority ──┼──> Ticket ──> Comment ──> Attachment
+   User  ──┘       ↑
+  Role  ────────────┘
 ```
 
-## Compile and run the project
+| Entidade   | Descrição                                              |
+|------------|---------------------------------------------------------|
+| Ticket     | Entidade central: chamado de suporte aberto por um usuário |
+| Category   | Categoria do chamado (ex: Hardware, Software, Rede)     |
+| Priority   | Nível de prioridade do chamado                          |
+| User       | Usuário do sistema (quem abre ou atende tickets)        |
+| Role       | Papel/permissão do usuário                               |
+| Comment    | Comentário/interação dentro de um ticket                |
+| Attachment | Arquivo anexado a um comentário                          |
 
+## Status do desenvolvimento
+
+| Módulo     | Status              |
+|------------|----------------------|
+| Ticket     | ✅ Completo e testado |
+| Category   | 🚧 Em andamento       |
+| Priority   | ⏳ Não iniciado       |
+| User       | ⏳ Não iniciado       |
+| Role       | ⏳ Não iniciado       |
+| Comment    | ⏳ Não iniciado       |
+| Attachment | ⏳ Não iniciado       |
+| Autenticação/JWT | ⏳ Planejado para depois dos CRUDs básicos |
+
+## Convenções do projeto
+
+- Tabelas no banco usam prefixo `tb_` (ex: `tb_tickets`, `tb_categories`)
+- Nomes de campos e classes em português (`titulo`, `descricao`, `nome`, etc.)
+- Cada módulo segue o padrão de camadas: `entity` → `service` → `controller` → `module`
+- Services seguem o padrão: `findAll`, `findById` (lança 404 se não encontrar), `create`, `update`, `delete`
+- Controllers seguem o padrão REST: `GET /`, `GET /:id`, `POST /`, `PUT /`, `DELETE /:id`
+- Validações feitas com `class-validator`
+
+## Como rodar o projeto localmente
+
+### Pré-requisitos
+
+- Node.js (versão 18 ou superior)
+- PostgreSQL instalado e rodando
+- npm ou yarn
+
+### Passo a passo
+
+1. Clone o repositório:
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/SEU-USUARIO/instant-desk.git
+cd instant-desk
 ```
 
-## Run tests
-
+2. Instale as dependências:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+3. Crie o banco de dados no PostgreSQL:
+```sql
+CREATE DATABASE db_instant_desk;
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. Configure as variáveis de conexão com o banco em `src/app.module.ts` (ou em um arquivo `.env`, caso o projeto já tenha migrado para essa abordagem):
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=sua_senha
+DB_DATABASE=db_instant_desk
+```
 
-## Resources
+5. Rode a aplicação em modo de desenvolvimento:
+```bash
+npm run start:dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+A API estará disponível em `http://localhost:3000`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Testando a API
 
-## Support
+Recomendado testar todos os endpoints via [Postman](https://www.postman.com/), cobrindo os cenários de sucesso (200/201/204) e de erro (400/404) para cada recurso.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Endpoints disponíveis (Ticket)
 
-## Stay in touch
+| Método | Rota          | Descrição                  |
+|--------|---------------|-----------------------------|
+| GET    | /tickets      | Lista todos os tickets      |
+| GET    | /tickets/:id  | Busca um ticket por ID      |
+| POST   | /tickets      | Cria um novo ticket         |
+| PUT    | /tickets      | Atualiza um ticket existente|
+| DELETE | /tickets/:id  | Remove um ticket             |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+> Os demais recursos (`Category`, `Priority`, `User`, `Comment`, `Attachment`) seguirão o mesmo padrão de rotas conforme forem implementados.
 
-## License
+## Fluxo de trabalho (Git)
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- O módulo `Ticket` foi desenvolvido diretamente na branch `main`
+- A partir do módulo `Category`, cada novo módulo passou a ser desenvolvido em uma branch própria (ex: `category`, `priority`, `user`)
+- Após finalizar e testar um módulo, a branch correspondente é mergeada de volta na `main`
+
+```bash
+git checkout main
+git merge nome-do-modulo
+git push origin main
+```
+
+## Roadmap
+
+- [x] CRUD de Ticket
+- [x] CRUD de Category + relacionamento com Ticket
+- [ ] CRUD de Priority + relacionamento com Ticket
+- [ ] CRUD de User + Role
+- [ ] CRUD de Comment (vinculado a Ticket)
+- [ ] CRUD de Attachment (vinculado a Comment)
+- [ ] Autenticação e autorização com JWT
+- [ ] Documentação da API (Swagger)
+
+## Autor
+
+Paulo — projeto desenvolvido para fins de aprendizado em NestJS, TypeORM e PostgreSQL.
