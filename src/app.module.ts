@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { TicketModule } from './ticket/ticket.module';
 import { CategoryModule } from './category/category.module';
 import { PriorityModule } from './priority/priority.module';
+import { Priority } from './priority/entities/priority.entity';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { PriorityModule } from './priority/priority.module';
       username: 'postgres',
       password: 'postgres123',
       database: 'db_instant_desk',
-      entities: [Ticket, Category],
+      entities: [Ticket, Category, Priority],
       synchronize: true,
     }),
     TicketModule,
