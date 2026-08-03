@@ -15,7 +15,9 @@ export class TicketService {
   ) {}
 
   async findAll(): Promise<Ticket[]> {
-    return await this.ticketRepository.find();
+    return await this.ticketRepository.find({
+      relations: { category: true, priority: true, user: true },
+    });
   }
 
   async findById(id: number): Promise<Ticket> {

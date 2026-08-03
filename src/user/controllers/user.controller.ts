@@ -16,7 +16,7 @@ import { User } from '../entities/user.entity';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get()
+  @Get('/all')
   @HttpCode(HttpStatus.OK)
   findAll(): Promise<User[]> {
     return this.userService.findAll();
@@ -28,13 +28,13 @@ export class UserController {
     return this.userService.findById(id);
   }
 
-  @Post()
+  @Post('/cadastrar')
   @HttpCode(HttpStatus.CREATED)
   create(@Body() user: User): Promise<User> {
     return this.userService.create(user);
   }
 
-  @Put()
+  @Put('/atualizar')
   @HttpCode(HttpStatus.OK)
   update(@Body() user: User): Promise<User> {
     return this.userService.update(user);
