@@ -19,16 +19,21 @@ export class TicketService {
   }
 
   async findById(id: number): Promise<Ticket> {
-    const ticket = await this.ticketRepository.findOne({ where: { id } });
+    const ticket = await this.ticketRepository.findOne({
+      where: { id },
+      relations: { category: true, priority: true, user: true },
+    });
 
     if (!ticket) {
       throw new HttpException('Ticket não encontrado', HttpStatus.NOT_FOUND);
     }
     return ticket;
   }
+
   async findByDescricao(descricao: string): Promise<Ticket[]> {
     return await this.ticketRepository.find({
       where: { descricao: ILike(`%${descricao}%`) },
+      relations: { category: true, priority: true, user: true },
     });
   }
 
