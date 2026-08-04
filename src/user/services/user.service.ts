@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { Bcrypt } from '../../auth/entities/bcrypt/bcrypt';
+import { Bcrypt } from 'src/auth/bcrypt/bcrypt';
 
 @Injectable()
 export class UserService {
@@ -13,9 +13,11 @@ export class UserService {
   ) {}
 
   async findByUsuario(usuario: string): Promise<User | undefined> {
-    return await this.userRepository.findOne({
-      where: { usuario },
-    });
+    return (
+      (await this.userRepository.findOne({
+        where: { usuario },
+      })) ?? undefined
+    );
   }
 
   async findAll(): Promise<User[]> {
@@ -37,9 +39,9 @@ export class UserService {
   }
 
   async create(user: User): Promise<User> {
-    const buscaUsuario = await this.findByUsuario(user.usuario);
+    const buscaUser = await this.findByUsuario(user.usuario);
 
-    if (buscaUsuario)
+    if (buscaUser)
       throw new HttpException('O usuário já existe!', HttpStatus.BAD_REQUEST);
 
     user.senha = await this.bcrypt.criptografarSenha(user.senha);
@@ -49,11 +51,11 @@ export class UserService {
   async update(user: User): Promise<User> {
     await this.findById(user.id);
 
-    const buscaUsuario = await this.findByUsuario(user.usuario);
+    const buscaUser = await this.findByUsuario(user.usuario);
 
-    if (buscaUsuario && buscaUsuario.id !== user.id)
+    if (buscaUser && buscaUser.id !== user.id)
       throw new HttpException(
-        'Usuário (e-mail) já cadastrado!',
+        'Usuário (login) já cadastrado!',
         HttpStatus.BAD_REQUEST,
       );
 

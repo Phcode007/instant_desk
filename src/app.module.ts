@@ -8,7 +8,7 @@ import { CategoryModule } from './category/category.module';
 import { PriorityModule } from './priority/priority.module';
 import { Priority } from './priority/entities/priority.entity';
 import { User } from './user/entities/user.entity';
-import { UserModule } from './user/user.modules';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

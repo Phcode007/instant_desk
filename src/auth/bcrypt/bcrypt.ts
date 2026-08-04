@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 export class Bcrypt {
   async criptografarSenha(senha: string): Promise<string> {
     const saltos: number = 10;
-    return await bcrypt.hash(senha, saltos);
+    return await bcrypt.hash( senha, saltos );
   }
 
   async compararSenhas(
