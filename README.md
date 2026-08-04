@@ -131,8 +131,8 @@ git push origin main
 
 - [x] CRUD de Ticket
 - [x] CRUD de Category + relacionamento com Ticket
-- [ ] CRUD de Priority + relacionamento com Ticket
-- [ ] CRUD de User + Role
+- [X] CRUD de Priority + relacionamento com Ticket
+- [X] CRUD de User + Role
 - [ ] CRUD de Comment (vinculado a Ticket)
 - [ ] CRUD de Attachment (vinculado a Comment)
 - [ ] Autenticação e autorização com JWT
