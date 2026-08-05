@@ -1,5 +1,5 @@
 export class UserLogin {
-  user!: string;
+  usuario!: string;
 
-  password!: string;
+  senha!: string;
 }

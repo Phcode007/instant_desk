@@ -12,7 +12,10 @@ import {
 } from '@nestjs/common';
 import { TicketService } from '../services/ticket.service';
 import { Ticket } from '../entities/ticket.entity';
+import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
+import { UseGuards } from '@nestjs/common';
 
+@UseGuards(JwtAuthGuard)
 @Controller('/tickets')
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}

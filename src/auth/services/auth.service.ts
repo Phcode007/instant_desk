@@ -36,6 +36,9 @@ export class AuthService {
 
     const buscaUser = await this.userService.findByUsuario(userLogin.usuario);
 
+    if (!buscaUser)
+      throw new HttpException('Usuário não encontrado!', HttpStatus.NOT_FOUND);
+
     return {
       id: buscaUser.id,
       nome: buscaUser.nome,
