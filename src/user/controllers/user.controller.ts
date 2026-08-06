@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('/all')
   @HttpCode(HttpStatus.OK)
   findAll(): Promise<User[]> {
@@ -37,6 +38,7 @@ export class UserController {
     return this.userService.create(user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('/atualizar')
   @HttpCode(HttpStatus.OK)
   update(@Body() user: User): Promise<User> {

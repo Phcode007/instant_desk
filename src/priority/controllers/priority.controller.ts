@@ -9,10 +9,13 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { Priority } from '../entities/priority.entity';
 import { PriorityService } from '../services/priority.service';
+import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('/priorities')
 export class PriorityController {
   constructor(private readonly priorityService: PriorityService) {}
@@ -23,6 +26,7 @@ export class PriorityController {
     return this.priorityService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   findById(@Param('id', ParseIntPipe) id: number): Promise<Priority> {
@@ -35,6 +39,7 @@ export class PriorityController {
     return this.priorityService.create(priority);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put()
   @HttpCode(HttpStatus.OK)
   update(@Body() priority: Priority): Promise<Priority> {
