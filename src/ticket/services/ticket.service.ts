@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository, DeleteResult } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
-import { CategoryService } from 'src/category/services/category.service';
-import { PriorityService } from 'src/priority/services/priority.service';
+import { CategoryService } from '../../category/services/category.service';
+import { PriorityService } from '../../priority/services/priority.service';
 
 @Injectable()
 export class TicketService {

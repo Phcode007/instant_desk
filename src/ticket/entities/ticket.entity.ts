@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
-import { Category } from 'src/category/entities/category.entity';
-import { Priority } from 'src/priority/entities/priority.entity';
-import { User } from 'src/user/entities/user.entity';
+import { Category } from '../../category/entities/category.entity';
+import { Priority } from '../../priority/entities/priority.entity';
+import { User } from '../../user/entities/user.entity';
 import {
   Column,
   Entity,

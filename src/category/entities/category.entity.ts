@@ -1,5 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
-import { Ticket } from 'src/ticket/entities/ticket.entity';
+import { Ticket } from '../../ticket/entities/ticket.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'tb_categories' })
