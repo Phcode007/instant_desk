@@ -16,20 +16,19 @@ import { PriorityService } from '../services/priority.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@UseGuards(JwtAuthGuard)
 @Controller('/priorities')
 @ApiTags('Priorities')
 @ApiBearerAuth()
 export class PriorityController {
   constructor(private readonly priorityService: PriorityService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   findAll(): Promise<Priority[]> {
     return this.priorityService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   findById(@Param('id', ParseIntPipe) id: number): Promise<Priority> {
@@ -42,7 +41,6 @@ export class PriorityController {
     return this.priorityService.create(priority);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put()
   @HttpCode(HttpStatus.OK)
   update(@Body() priority: Priority): Promise<Priority> {

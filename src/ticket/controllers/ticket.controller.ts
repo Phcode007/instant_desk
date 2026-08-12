@@ -16,13 +16,13 @@ import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@UseGuards(JwtAuthGuard)
 @Controller('/tickets')
 @ApiTags('Tickets')
 @ApiBearerAuth()
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   findAll(): Promise<Ticket[]> {
@@ -34,21 +34,25 @@ export class TicketController {
   findById(@Param('id', ParseIntPipe) id: number): Promise<Ticket> {
     return this.ticketService.findById(id);
   }
+
   @Get('/descricao/:descricao')
   @HttpCode(HttpStatus.OK)
   findByDescricao(@Param('descricao') descricao: string): Promise<Ticket[]> {
     return this.ticketService.findByDescricao(descricao);
   }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() ticket: Ticket): Promise<Ticket> {
     return this.ticketService.create(ticket);
   }
+
   @Put()
   @HttpCode(HttpStatus.OK)
   update(@Body() ticket: Ticket): Promise<Ticket> {
     return this.ticketService.update(ticket);
   }
+
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id', ParseIntPipe) id: number) {
