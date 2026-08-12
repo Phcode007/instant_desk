@@ -1,6 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { Ticket } from '../../ticket/entities/ticket.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'tb_categories' })
 export class Category {
@@ -9,8 +10,10 @@ export class Category {
 
   @IsNotEmpty()
   @Column({ length: 255, nullable: false })
+  @ApiProperty()
   nome!: string;
 
+  @ApiProperty()
   @OneToMany(() => Ticket, (ticket) => ticket.category, {
     onDelete: 'CASCADE',
   })

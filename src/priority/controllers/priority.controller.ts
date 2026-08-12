@@ -14,12 +14,15 @@ import {
 import { Priority } from '../entities/priority.entity';
 import { PriorityService } from '../services/priority.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
-@UseGuards(JwtAuthGuard)
 @Controller('/priorities')
+@ApiTags('Priorities')
+@ApiBearerAuth()
 export class PriorityController {
   constructor(private readonly priorityService: PriorityService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   findAll(): Promise<Priority[]> {

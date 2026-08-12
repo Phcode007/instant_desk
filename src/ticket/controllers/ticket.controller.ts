@@ -14,12 +14,15 @@ import { TicketService } from '../services/ticket.service';
 import { Ticket } from '../entities/ticket.entity';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@UseGuards(JwtAuthGuard)
 @Controller('/tickets')
+@ApiTags('Tickets')
+@ApiBearerAuth()
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   findAll(): Promise<Ticket[]> {

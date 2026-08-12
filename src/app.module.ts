@@ -9,6 +9,7 @@ import { PriorityModule } from './priority/priority.module';
 import { Priority } from './priority/entities/priority.entity';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { UserModule } from './user/user.module';
     PriorityModule,
     UserModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}

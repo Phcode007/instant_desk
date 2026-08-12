@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'tb_tickets' })
 export class Ticket {
@@ -17,24 +18,31 @@ export class Ticket {
 
   @IsNotEmpty()
   @Column({ length: 100, nullable: false })
+  @ApiProperty()
   titulo!: string;
 
   @IsNotEmpty()
   @Column({ length: 100, nullable: false })
+  @ApiProperty()
   descricao!: string;
 
   @Column({ length: 20, nullable: false, default: 'aberto' })
+  @ApiProperty()
   status!: string;
 
   @UpdateDateColumn()
+  @ApiProperty()
   data!: Date;
 
   @ManyToOne(() => Category, (category) => category.ticket)
+  @ApiProperty()
   category!: Category;
 
   @ManyToOne(() => Priority, (priority) => priority.ticket)
+  @ApiProperty()
   priority!: Priority;
 
   @ManyToOne(() => User, (user) => user.ticket)
+  @ApiProperty()
   user!: User;
 }
