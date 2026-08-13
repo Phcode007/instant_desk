@@ -1,6 +1,6 @@
 import { Company } from './../../company/entities/company.entity';
 import { IsNotEmpty } from 'class-validator';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Ticket } from '../../ticket/entities/ticket.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -21,6 +21,6 @@ export class Priority {
   ticket!: Ticket[];
 
   @ApiProperty()
-  @OneToMany(() => Company, (company) => company.user)
+  @ManyToOne(() => Company, (company) => company.priority)
   company!: Company[];
 }

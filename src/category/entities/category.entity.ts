@@ -21,6 +21,6 @@ export class Category {
   ticket!: Ticket[];
 
   @ApiProperty()
-  @OneToMany(() => Company, (company) => company.user)
+  @OneToMany(() => Company, (company) => company.category)
   company!: Company[];
 }
