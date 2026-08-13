@@ -10,6 +10,8 @@ import { Priority } from './priority/entities/priority.entity';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { AppController } from './app.controller';
+import { Company } from './company/entities/company.entity';
+import { CompanyModule } from './company/company.module';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { AppController } from './app.controller';
       username: 'postgres',
       password: 'postgres123',
       database: 'db_instant_desk',
-      entities: [Ticket, Category, Priority, User],
+      entities: [Ticket, Category, Priority, User, Company],
       synchronize: true,
     }),
     TicketModule,
@@ -28,6 +30,7 @@ import { AppController } from './app.controller';
     AuthModule,
     PriorityModule,
     UserModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [],
