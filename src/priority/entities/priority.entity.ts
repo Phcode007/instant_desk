@@ -1,3 +1,4 @@
+import { Company } from './../../company/entities/company.entity';
 import { IsNotEmpty } from 'class-validator';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Ticket } from '../../ticket/entities/ticket.entity';
@@ -18,4 +19,8 @@ export class Priority {
     onDelete: 'CASCADE',
   })
   ticket!: Ticket[];
+
+  @ApiProperty()
+  @OneToMany(() => Company, (company) => company.user)
+  company!: Company[];
 }
