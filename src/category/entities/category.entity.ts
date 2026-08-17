@@ -1,8 +1,14 @@
-import { Company } from './../../company/entities/company.entity';
 import { IsNotEmpty } from 'class-validator';
 import { Ticket } from '../../ticket/entities/ticket.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Company } from '../../company/entities/company.entity';
 
 @Entity({ name: 'tb_categories' })
 export class Category {
@@ -20,7 +26,7 @@ export class Category {
   })
   ticket!: Ticket[];
 
-  @ApiProperty()
-  @OneToMany(() => Company, (company) => company.category)
-  company!: Company[];
+  @ApiProperty({ type: () => Company })
+  @ManyToOne(() => Company, (company) => company.category)
+  company!: Company;
 }
