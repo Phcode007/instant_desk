@@ -2,12 +2,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { Priority } from '../entities/priority.entity';
+import { CompanyService } from '../../company/services/company.service';
 
 @Injectable()
 export class PriorityService {
   constructor(
     @InjectRepository(Priority)
     private priorityRepository: Repository<Priority>,
+    private companyService: CompanyService,
   ) {}
 
   async findAll(): Promise<Priority[]> {
@@ -29,11 +31,13 @@ export class PriorityService {
   }
 
   async create(priority: Priority): Promise<Priority> {
+    await this.companyService.findById(priority.company.id);
     return await this.priorityRepository.save(priority);
   }
 
   async update(priority: Priority): Promise<Priority> {
     await this.findById(priority.id);
+    await this.companyService.findById(priority.company.id);
     return await this.priorityRepository.save(priority);
   }
 
