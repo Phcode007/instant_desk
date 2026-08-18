@@ -30,7 +30,7 @@ export class User {
   @ApiProperty()
   senha!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Ticket })
   @OneToMany(() => Ticket, (ticket) => ticket.user)
   ticket!: Ticket[];
 

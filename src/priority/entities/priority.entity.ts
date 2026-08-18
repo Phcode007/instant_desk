@@ -20,7 +20,7 @@ export class Priority {
   @ApiProperty()
   nome!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Ticket })
   @OneToMany(() => Ticket, (ticket) => ticket.priority, {
     onDelete: 'CASCADE',
   })

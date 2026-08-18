@@ -35,14 +35,14 @@ export class Ticket {
   data!: Date;
 
   @ManyToOne(() => Category, (category) => category.ticket)
-  @ApiProperty()
+  @ApiProperty({ type: () => Category })
   category!: Category;
 
   @ManyToOne(() => Priority, (priority) => priority.ticket)
-  @ApiProperty()
+  @ApiProperty({ type: () => Priority })
   priority!: Priority;
 
   @ManyToOne(() => User, (user) => user.ticket)
-  @ApiProperty()
+  @ApiProperty({ type: () => User })
   user!: User;
 }

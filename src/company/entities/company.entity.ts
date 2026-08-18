@@ -15,15 +15,15 @@ export class Company {
   @ApiProperty()
   nome!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: () => User })
   @OneToMany(() => User, (user) => user.company)
   user!: User[];
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Category })
   @OneToMany(() => Category, (category) => category.company)
   category!: Category[];
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Priority })
   @OneToMany(() => Priority, (priority) => priority.company)
   priority!: Priority[];
 }

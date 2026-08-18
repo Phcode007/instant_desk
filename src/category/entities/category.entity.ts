@@ -20,7 +20,7 @@ export class Category {
   @ApiProperty()
   nome!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Ticket })
   @OneToMany(() => Ticket, (ticket) => ticket.category, {
     onDelete: 'CASCADE',
   })

@@ -10,13 +10,15 @@ import { UserModule } from './user/user.module';
 import { CompanyModule } from './company/company.module';
 import { AppController } from './app.controller';
 import { ProdService } from './data/service/prod.service';
+import { DevService } from './data/service/dev.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
 
     TypeOrmModule.forRootAsync({
-      useClass: ProdService,
+      useClass:
+        process.env.NODE_ENV === 'production' ? ProdService : DevService,
       imports: [ConfigModule],
     }),
 
