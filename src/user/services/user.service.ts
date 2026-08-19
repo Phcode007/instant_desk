@@ -56,6 +56,12 @@ export class UserService {
   }
 
   async create(user: User): Promise<User> {
+    if (!user.company || !user.company.id)
+      throw new HttpException(
+        'A empresa (company) é obrigatória para cadastrar um usuário',
+        HttpStatus.BAD_REQUEST,
+      );
+
     const buscaUser = await this.findByUsuario(user.usuario);
 
     if (buscaUser)
@@ -68,6 +74,12 @@ export class UserService {
   }
 
   async update(user: User, companyId: number | null): Promise<User> {
+    if (!user.company || !user.company.id)
+      throw new HttpException(
+        'A empresa (company) é obrigatória para atualizar um usuário',
+        HttpStatus.BAD_REQUEST,
+      );
+
     await this.findById(user.id, companyId);
 
     const buscaUser = await this.findByUsuario(user.usuario);
