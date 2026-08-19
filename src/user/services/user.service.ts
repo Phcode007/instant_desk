@@ -18,6 +18,7 @@ export class UserService {
     return (
       (await this.userRepository.findOne({
         where: { usuario },
+        relations: { company: true },
       })) ?? undefined
     );
   }
