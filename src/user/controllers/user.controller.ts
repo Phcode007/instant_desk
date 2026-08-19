@@ -14,6 +14,7 @@ import { UserService } from '../services/user.service';
 import { User } from '../entities/user.entity';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CompanyId } from '../../auth/decorators/company_id.decorator';
 
 @ApiTags('Users')
 @Controller('/users')
@@ -24,15 +25,18 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('/all')
   @HttpCode(HttpStatus.OK)
-  findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  findAll(@CompanyId() companyId: number | null): Promise<User[]> {
+    return this.userService.findAll(companyId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  findById(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    return this.userService.findById(id);
+  findById(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+  ): Promise<User> {
+    return this.userService.findById(id, companyId);
   }
 
   @Post('/cadastrar')
@@ -44,7 +48,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Put('/atualizar')
   @HttpCode(HttpStatus.OK)
-  update(@Body() user: User): Promise<User> {
-    return this.userService.update(user);
+  update(
+    @Body() user: User,
+    @CompanyId() companyId: number | null,
+  ): Promise<User> {
+    return this.userService.update(user, companyId);
   }
 }

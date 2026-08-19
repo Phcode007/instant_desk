@@ -14,6 +14,15 @@ export class UserService {
     private companyService: CompanyService,
   ) {}
 
+  private checkCompanyId(companyId: number | null): number {
+    if (!companyId)
+      throw new HttpException(
+        'Usuário não está vinculado a uma empresa',
+        HttpStatus.FORBIDDEN,
+      );
+    return companyId;
+  }
+
   async findByUsuario(usuario: string): Promise<User | undefined> {
     return (
       (await this.userRepository.findOne({
@@ -23,15 +32,20 @@ export class UserService {
     );
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(companyId: number | null): Promise<User[]> {
+    const id = this.checkCompanyId(companyId);
+
     return await this.userRepository.find({
+      where: { company: { id } },
       relations: { ticket: true },
     });
   }
 
-  async findById(id: number): Promise<User> {
+  async findById(id: number, companyId: number | null): Promise<User> {
+    const validCompanyId = this.checkCompanyId(companyId);
+
     const user = await this.userRepository.findOne({
-      where: { id },
+      where: { id, company: { id: validCompanyId } },
       relations: { ticket: true },
     });
 
@@ -53,8 +67,8 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async update(user: User): Promise<User> {
-    await this.findById(user.id);
+  async update(user: User, companyId: number | null): Promise<User> {
+    await this.findById(user.id, companyId);
 
     const buscaUser = await this.findByUsuario(user.usuario);
 

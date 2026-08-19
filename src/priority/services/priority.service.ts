@@ -12,13 +12,28 @@ export class PriorityService {
     private companyService: CompanyService,
   ) {}
 
-  async findAll(): Promise<Priority[]> {
-    return await this.priorityRepository.find();
+  private checkCompanyId(companyId: number | null): number {
+    if (!companyId)
+      throw new HttpException(
+        'Usuário não está vinculado a uma empresa',
+        HttpStatus.FORBIDDEN,
+      );
+    return companyId;
   }
 
-  async findById(id: number): Promise<Priority> {
+  async findAll(companyId: number | null): Promise<Priority[]> {
+    const id = this.checkCompanyId(companyId);
+
+    return await this.priorityRepository.find({
+      where: { company: { id } },
+    });
+  }
+
+  async findById(id: number, companyId: number | null): Promise<Priority> {
+    const validCompanyId = this.checkCompanyId(companyId);
+
     const priority = await this.priorityRepository.findOne({
-      where: { id },
+      where: { id, company: { id: validCompanyId } },
     });
 
     if (!priority)
@@ -35,14 +50,17 @@ export class PriorityService {
     return await this.priorityRepository.save(priority);
   }
 
-  async update(priority: Priority): Promise<Priority> {
-    await this.findById(priority.id);
+  async update(
+    priority: Priority,
+    companyId: number | null,
+  ): Promise<Priority> {
+    await this.findById(priority.id, companyId);
     await this.companyService.findById(priority.company.id);
     return await this.priorityRepository.save(priority);
   }
 
-  async delete(id: number): Promise<DeleteResult> {
-    await this.findById(id);
+  async delete(id: number, companyId: number | null): Promise<DeleteResult> {
+    await this.findById(id, companyId);
     return await this.priorityRepository.delete(id);
   }
 }

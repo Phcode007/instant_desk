@@ -15,6 +15,7 @@ import { Priority } from '../entities/priority.entity';
 import { PriorityService } from '../services/priority.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { CompanyId } from '../../auth/decorators/company_id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/priorities')
@@ -25,14 +26,17 @@ export class PriorityController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll(): Promise<Priority[]> {
-    return this.priorityService.findAll();
+  findAll(@CompanyId() companyId: number | null): Promise<Priority[]> {
+    return this.priorityService.findAll(companyId);
   }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  findById(@Param('id', ParseIntPipe) id: number): Promise<Priority> {
-    return this.priorityService.findById(id);
+  findById(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+  ): Promise<Priority> {
+    return this.priorityService.findById(id, companyId);
   }
 
   @Post()
@@ -43,13 +47,19 @@ export class PriorityController {
 
   @Put()
   @HttpCode(HttpStatus.OK)
-  update(@Body() priority: Priority): Promise<Priority> {
-    return this.priorityService.update(priority);
+  update(
+    @Body() priority: Priority,
+    @CompanyId() companyId: number | null,
+  ): Promise<Priority> {
+    return this.priorityService.update(priority, companyId);
   }
 
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.priorityService.delete(id);
+  delete(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+  ) {
+    return this.priorityService.delete(id, companyId);
   }
 }

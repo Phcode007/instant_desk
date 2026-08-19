@@ -12,14 +12,22 @@ export class CategoryService {
     private companyService: CompanyService,
   ) {}
 
-  async findAll(): Promise<Category[]> {
-    return await this.categoryRepository.find();
+  async findAll(companyId: number | null): Promise<Category[]> {
+    if (!companyId) return await this.categoryRepository.find();
+
+    return await this.categoryRepository.find({
+      where: { company: { id: companyId } },
+    });
   }
 
-  async findById(id: number): Promise<Category> {
-    const category = await this.categoryRepository.findOne({ where: { id } });
+  async findById(id: number, companyId: number | null): Promise<Category> {
+    const category = await this.categoryRepository.findOne({
+      where: companyId ? { id, company: { id: companyId } } : { id },
+    });
+
     if (!category)
       throw new HttpException('Categoria não encontrada', HttpStatus.NOT_FOUND);
+
     return category;
   }
 
@@ -28,14 +36,17 @@ export class CategoryService {
     return await this.categoryRepository.save(category);
   }
 
-  async update(category: Category): Promise<Category> {
-    await this.findById(category.id);
+  async update(
+    category: Category,
+    companyId: number | null,
+  ): Promise<Category> {
+    await this.findById(category.id, companyId);
     await this.companyService.findById(category.company.id);
     return await this.categoryRepository.save(category);
   }
 
-  async delete(id: number): Promise<DeleteResult> {
-    await this.findById(id);
+  async delete(id: number, companyId: number | null): Promise<DeleteResult> {
+    await this.findById(id, companyId);
     return await this.categoryRepository.delete(id);
   }
 }

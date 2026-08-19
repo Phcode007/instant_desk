@@ -15,6 +15,7 @@ import { Category } from '../entities/category.entity';
 import { CategoryService } from '../services/category.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { CompanyId } from '../../auth/decorators/company_id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('Categories')
@@ -25,14 +26,17 @@ export class CategoryController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll(): Promise<Category[]> {
-    return this.categoryService.findAll();
+  findAll(@CompanyId() companyId: number | null): Promise<Category[]> {
+    return this.categoryService.findAll(companyId);
   }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  findById(@Param('id', ParseIntPipe) id: number): Promise<Category> {
-    return this.categoryService.findById(id);
+  findById(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+  ): Promise<Category> {
+    return this.categoryService.findById(id, companyId);
   }
 
   @Post()
@@ -43,13 +47,19 @@ export class CategoryController {
 
   @Put()
   @HttpCode(HttpStatus.OK)
-  update(@Body() category: Category): Promise<Category> {
-    return this.categoryService.update(category);
+  update(
+    @Body() category: Category,
+    @CompanyId() companyId: number | null,
+  ): Promise<Category> {
+    return this.categoryService.update(category, companyId);
   }
 
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.categoryService.delete(id);
+  delete(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+  ) {
+    return this.categoryService.delete(id, companyId);
   }
 }
