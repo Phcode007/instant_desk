@@ -12,17 +12,45 @@ export class CategoryService {
     private companyService: CompanyService,
   ) {}
 
+  private checkCompanyId(companyId: number | null): number {
+    if (!companyId)
+      throw new HttpException(
+        'Usuário não está vinculado a uma empresa',
+        HttpStatus.FORBIDDEN,
+      );
+    return companyId;
+  }
+
   async findAll(companyId: number | null): Promise<Category[]> {
-    if (!companyId) return await this.categoryRepository.find();
+    const id = this.checkCompanyId(companyId);
 
     return await this.categoryRepository.find({
-      where: { company: { id: companyId } },
+      where: { company: { id } },
     });
   }
 
   async findById(id: number, companyId: number | null): Promise<Category> {
+    const validCompanyId = this.checkCompanyId(companyId);
+
     const category = await this.categoryRepository.findOne({
-      where: companyId ? { id, company: { id: companyId } } : { id },
+      where: { id, company: { id: validCompanyId } },
+    });
+
+    if (!category)
+      throw new HttpException('Categoria não encontrada', HttpStatus.NOT_FOUND);
+
+    return category;
+  }
+
+  /**
+   * Busca sem filtro de empresa. Uso interno para validação de
+   * integridade referencial (ex: TicketService confirmando que a
+   * categoria informada existe), já que Ticket não é isolado
+   * diretamente por company.
+   */
+  async findByIdUnscoped(id: number): Promise<Category> {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
     });
 
     if (!category)
