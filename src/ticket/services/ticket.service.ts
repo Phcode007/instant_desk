@@ -40,15 +40,15 @@ export class TicketService {
   }
 
   async create(ticket: Ticket): Promise<Ticket> {
-    await this.categoryService.findById(ticket.category.id);
-    await this.priorityService.findById(ticket.priority.id);
+    await this.categoryService.findByIdUnscoped(ticket.category.id);
+    await this.priorityService.findByIdUnscoped(ticket.priority.id);
     return await this.ticketRepository.save(ticket);
   }
 
   async update(ticket: Ticket): Promise<Ticket> {
     await this.findById(ticket.id);
-    await this.categoryService.findById(ticket.category.id);
-    await this.priorityService.findById(ticket.priority.id);
+    await this.categoryService.findByIdUnscoped(ticket.category.id);
+    await this.priorityService.findByIdUnscoped(ticket.priority.id);
     return await this.ticketRepository.save(ticket);
   }
 

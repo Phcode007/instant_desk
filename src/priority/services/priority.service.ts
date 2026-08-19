@@ -45,6 +45,20 @@ export class PriorityService {
     return priority;
   }
 
+  async findByIdUnscoped(id: number): Promise<Priority> {
+    const priority = await this.priorityRepository.findOne({
+      where: { id },
+    });
+
+    if (!priority)
+      throw new HttpException(
+        'Prioridade não encontrada!',
+        HttpStatus.NOT_FOUND,
+      );
+
+    return priority;
+  }
+
   async create(priority: Priority): Promise<Priority> {
     await this.companyService.findById(priority.company.id);
     return await this.priorityRepository.save(priority);
