@@ -11,6 +11,8 @@ import { CompanyModule } from './company/company.module';
 import { AppController } from './app.controller';
 import { ProdService } from './data/service/prod.service';
 import { DevService } from './data/service/dev.service';
+import { AttachmentModule } from './attachment/attachment.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { DevService } from './data/service/dev.service';
     PriorityModule,
     UserModule,
     CompanyModule,
+    CommentModule,
+    AttachmentModule,
   ],
   controllers: [AppController],
   providers: [],

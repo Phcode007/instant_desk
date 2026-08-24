@@ -9,6 +9,7 @@ import {
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Company } from '../../company/entities/company.entity';
+import { Comment } from '../../comment/entities/comment.entity';
 
 @Entity({ name: 'tb_users' })
 export class User {
@@ -37,4 +38,8 @@ export class User {
   @ApiProperty({ type: () => Company })
   @ManyToOne(() => Company, (company) => company.user)
   company!: Company;
+
+  @ApiProperty({ type: () => Comment })
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comment!: Comment[];
 }

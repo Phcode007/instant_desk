@@ -6,10 +6,12 @@ import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Comment } from '../../comment/entities/comment.entity';
 
 @Entity({ name: 'tb_tickets' })
 export class Ticket {
@@ -45,4 +47,8 @@ export class Ticket {
   @ManyToOne(() => User, (user) => user.ticket)
   @ApiProperty({ type: () => User })
   user!: User;
+
+  @ApiProperty({ type: () => Comment })
+  @OneToMany(() => Comment, (comment) => comment.ticket)
+  comment!: Comment[];
 }
