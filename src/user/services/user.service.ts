@@ -55,6 +55,18 @@ export class UserService {
     return user;
   }
 
+  async findByIdUnscoped(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: { company: true, ticket: true, comment: true },
+    });
+
+    if (!user)
+      throw new HttpException('Usuário não encontrado!', HttpStatus.NOT_FOUND);
+
+    return user;
+  }
+
   async create(user: User): Promise<User> {
     if (!user.company || !user.company.id)
       throw new HttpException(
