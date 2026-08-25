@@ -4,7 +4,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { TestAppModule } from './testapp.module';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from '../src/company/entities/company.entity';
@@ -30,7 +30,7 @@ describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
           synchronize: true,
           dropSchema: true,
         }),
-        AppModule,
+        TestAppModule,
       ],
     }).compile();
 
