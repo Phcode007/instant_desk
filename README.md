@@ -7,7 +7,7 @@ Sistema de Help Desk desenvolvido como projeto de estudo, aplicando os conceitos
 
 ## Sobre o projeto
 
-O Instant Desk permite abrir, categorizar e priorizar tickets de suporte, com autenticação JWT e isolamento de dados por empresa (multi-tenancy). O objetivo principal é praticar a construção de uma API REST completa com NestJS, TypeORM e PostgreSQL, seguindo boas práticas de arquitetura em camadas (controller → service → repository), documentação automatizada, testes automatizados e deploy em produção.
+O Instant Desk permite abrir, categorizar, priorizar e comentar tickets de suporte, com autenticação JWT e isolamento de dados por empresa (multi-tenancy). O objetivo principal é praticar a construção de uma API REST completa com NestJS, TypeORM e PostgreSQL, seguindo boas práticas de arquitetura em camadas (controller → service → repository), documentação automatizada, testes automatizados e deploy em produção.
 
 ## Tecnologias utilizadas
 
@@ -18,29 +18,29 @@ O Instant Desk permite abrir, categorizar e priorizar tickets de suporte, com au
 - **[Passport + JWT](https://docs.nestjs.com/security/authentication)** — autenticação e autorização
 - **[Bcrypt](https://www.npmjs.com/package/bcrypt)** — hash de senhas
 - **[Swagger](https://docs.nestjs.com/openapi/introduction)** — documentação interativa da API
-- **[Jest](https://jestjs.io/) + [Supertest](https://github.com/ladjs/supertest)** — testes automatizados (unitários e e2e)
+- **[Jest](https://jestjs.io/) + [Supertest](https://github.com/ladjs/supertest)** — testes automatizados (e2e)
 - **TypeScript**
 - Deploy: **[Render](https://render.com/)**
 
 ## Modelo de dados
 
-O sistema é organizado em torno da entidade `Ticket`, que se relaciona com `Category` e `Priority`, e é aberto por um `User`. Para suportar múltiplas empresas usando o mesmo sistema (multi-tenancy), `User`, `Category` e `Priority` pertencem a uma `Company` — o `Ticket` herda esse isolamento indiretamente, através dessas relações.
+O sistema é organizado em torno da entidade `Ticket`, que se relaciona com `Category` e `Priority`, e é aberto por um `User`. Um `Ticket` pode receber vários `Comment`, e cada `Comment` pode ter vários `Attachment`. Para suportar múltiplas empresas usando o mesmo sistema (multi-tenancy), `User`, `Category` e `Priority` pertencem a uma `Company` — `Ticket`, `Comment` e `Attachment` herdam esse isolamento indiretamente, através dessas relações.
 
 ```
 Company ──┬──> User ──┐
-          ├──> Category ─┼──> Ticket
+          ├──> Category ─┼──> Ticket ──> Comment ──> Attachment
           └──> Priority ─┘
 ```
 
-| Entidade | Descrição                                                        |
-|----------|-------------------------------------------------------------------|
-| Ticket   | Entidade central: chamado de suporte aberto por um usuário        |
-| Category | Categoria do chamado (ex: Hardware, Software, Rede)                |
-| Priority | Nível de prioridade do chamado                                    |
-| User     | Usuário do sistema (quem abre tickets), autenticado via JWT       |
-| Company  | Empresa à qual usuários, categorias e prioridades pertencem (multi-tenancy) |
-
-> `Comment` e `Attachment` estavam no planejamento inicial, mas foram substituídos pelo módulo `Company` como prioridade de aprendizado (multi-tenancy). Podem retornar ao escopo futuramente.
+| Entidade   | Descrição                                                        |
+|------------|-------------------------------------------------------------------|
+| Ticket     | Entidade central: chamado de suporte aberto por um usuário        |
+| Category   | Categoria do chamado (ex: Hardware, Software, Rede)                |
+| Priority   | Nível de prioridade do chamado                                    |
+| User       | Usuário do sistema (quem abre tickets), autenticado via JWT       |
+| Company    | Empresa à qual usuários, categorias e prioridades pertencem (multi-tenancy) |
+| Comment    | Comentário/interação registrada em um Ticket, feito por um User    |
+| Attachment | Anexo (metadado: nome + URL) vinculado a um Comment                |
 
 ## Status do desenvolvimento
 
@@ -52,26 +52,29 @@ Company ──┬──> User ──┐
 | User                              | ✅ Completo, testado (e2e)       |
 | Autenticação / JWT                | ✅ Completo                      |
 | Documentação (Swagger)            | ✅ Completo                      |
-| Testes e2e (Jest + Supertest)     | ✅ Ticket, Category, Priority, User |
+| Comment                           | ✅ Completo, testado (e2e)       |
+| Attachment                        | ✅ Completo, testado (e2e)       |
+| Testes e2e (Jest + Supertest)     | ✅ Ticket, Category, Priority, User, Comment, Attachment |
 | Deploy em produção (Render)       | ✅ Completo                      |
-| **Company (multi-tenancy)**       | 🚧 Em andamento                  |
-| &nbsp;&nbsp;— Fase 1: CRUD isolado          | ✅ Completo |
-| &nbsp;&nbsp;— Fase 2: Relacionamento com User/Category/Priority | ✅ Completo |
-| &nbsp;&nbsp;— Fase 3: Validação obrigatória no create/update    | ✅ Completo |
-| &nbsp;&nbsp;— Fase 4: JWT payload com `company_id`              | ⏳ Planejado |
-| &nbsp;&nbsp;— Fase 5: Filtro automático por empresa logada       | ⏳ Planejado |
-| Comment                           | ⏳ Não iniciado (fora do escopo atual) |
-| Attachment                        | ⏳ Não iniciado (fora do escopo atual) |
+| **Company (multi-tenancy)**       | ✅ Completo (5 fases)            |
+| &nbsp;&nbsp;— Fase 1: CRUD isolado          | ✅ |
+| &nbsp;&nbsp;— Fase 2: Relacionamento com User/Category/Priority | ✅ |
+| &nbsp;&nbsp;— Fase 3: Validação obrigatória no create/update    | ✅ |
+| &nbsp;&nbsp;— Fase 4: JWT payload com `company_id`              | ✅ |
+| &nbsp;&nbsp;— Fase 5: Filtro automático por empresa logada (findAll/findById/update/delete) | ✅ |
+| Front-end (chat/React)            | ⏳ Planejado                     |
 
 ## Convenções do projeto
 
-- Tabelas no banco usam prefixo `tb_` (ex: `tb_tickets`, `tb_categories`, `tb_companies`)
-- Nomes de campos e classes em português (`titulo`, `descricao`, `nome`, etc.)
+- Tabelas no banco usam prefixo `tb_` (ex: `tb_tickets`, `tb_categories`, `tb_companies`, `tb_comments`, `tb_attachments`)
+- Nomes de campos e classes em português (`titulo`, `descricao`, `nome`, `comentario`, etc.)
 - Cada módulo segue o padrão de camadas: `entity` → `service` → `controller` → `module`
 - Services seguem o padrão: `findAll`, `findById` (lança 404 se não encontrar), `create`, `update`, `delete`
+- Módulos com isolamento por empresa (`Category`, `Priority`, `User`) expõem também um `findByIdUnscoped`, usado internamente por outros services (ex: `Ticket`, `Comment`) para validar existência de uma FK sem aplicar o filtro de empresa — já que `Ticket`/`Comment`/`Attachment` não são isolados diretamente por `company`
 - Controllers seguem o padrão REST: `GET /`, `GET /:id`, `POST /`, `PUT /`, `DELETE /:id`, com guard JWT aplicado a nível de classe
 - Validações feitas com `class-validator`
 - Relacionamentos entre entidades usam resolução "preguiçosa" (`type: () => Entidade`) tanto no TypeORM quanto no `@ApiProperty()` do Swagger, para evitar problemas de dependência circular
+- O `company_id` do usuário logado é extraído do payload do JWT através do decorator customizado `@CompanyId()`
 
 ## Como rodar o projeto localmente
 
@@ -108,11 +111,21 @@ npm run start:dev
 
 A API estará disponível em `http://localhost:4000`, e a documentação interativa em `http://localhost:4000/swagger`.
 
+### Bootstrap do multi-tenancy (primeira empresa)
+
+Como `User` exige uma `Company` já existente, e criar uma `Company` exige um usuário autenticado, o **primeiro** registro do sistema precisa ser inserido manualmente uma única vez:
+
+```sql
+INSERT INTO tb_companies (nome) VALUES ('Empresa Admin') RETURNING id;
+```
+
+A partir daí, cadastre o primeiro usuário via `POST /users/cadastrar` apontando para esse `id`, faça login, e use o token retornado para criar as demais empresas pela API normalmente.
+
 ## Testando a API
 
 ### Via Swagger
 
-Acesse `http://localhost:4000/swagger` (ou a [versão em produção](https://instant-desk.onrender.com/swagger)). Cadastre um usuário em `POST /users/cadastrar`, faça login em `POST /users/logar` para obter o token JWT, clique em **Authorize** e cole o token para desbloquear as rotas protegidas.
+Acesse `http://localhost:4000/swagger` (ou a [versão em produção](https://instant-desk.onrender.com/swagger)). Cadastre um usuário em `POST /users/cadastrar` (com uma `company` já existente), faça login em `POST /users/logar` para obter o token JWT, clique em **Authorize** e cole o token para desbloquear as rotas protegidas.
 
 ### Via testes automatizados (e2e)
 
@@ -126,22 +139,27 @@ npx jest test/user.e2e-spec.ts --config test/jest-e2e.json
 npx jest test/category.e2e-spec.ts --config test/jest-e2e.json
 npx jest test/priority.e2e-spec.ts --config test/jest-e2e.json
 npx jest test/ticket.e2e-spec.ts --config test/jest-e2e.json
+npx jest test/comment-attachment.e2e-spec.ts --config test/jest-e2e.json
 ```
 
-Os testes usam um banco SQLite em memória (`better-sqlite3`), isolado do banco de desenvolvimento/produção.
+Os testes usam um banco SQLite em memória (`better-sqlite3`), isolado do banco de desenvolvimento/produção, através de um `TestAppModule` dedicado (`test/testapp.module.ts`) que agrupa os módulos de funcionalidade sem trazer a conexão real de banco do `AppModule` — evitando que os testes tentem se conectar num Postgres real, independente do ambiente onde rodam.
 
 ### Endpoints disponíveis
 
-| Recurso  | Rotas                                                                 |
-|----------|------------------------------------------------------------------------|
-| Ticket   | `GET /tickets`, `GET /tickets/:id`, `GET /tickets/descricao/:descricao`, `POST /tickets`, `PUT /tickets`, `DELETE /tickets/:id` |
-| Category | `GET /category`, `GET /category/:id`, `POST /category`, `PUT /category`, `DELETE /category/:id` |
-| Priority | `GET /priorities`, `GET /priorities/:id`, `POST /priorities`, `PUT /priorities`, `DELETE /priorities/:id` |
-| User     | `GET /users/all`, `GET /users/:id`, `POST /users/cadastrar` (público), `PUT /users/atualizar` |
-| Auth     | `POST /users/logar` (público) |
-| Company  | `GET /companies`, `GET /companies/:id`, `POST /companies`, `PUT /companies`, `DELETE /companies/:id` |
+| Recurso    | Rotas                                                                 |
+|------------|------------------------------------------------------------------------|
+| Ticket     | `GET /tickets`, `GET /tickets/:id`, `GET /tickets/descricao/:descricao`, `POST /tickets`, `PUT /tickets`, `DELETE /tickets/:id` |
+| Category   | `GET /category`, `GET /category/:id`, `POST /category`, `PUT /category`, `DELETE /category/:id` |
+| Priority   | `GET /priorities`, `GET /priorities/:id`, `POST /priorities`, `PUT /priorities`, `DELETE /priorities/:id` |
+| User       | `GET /users/all`, `GET /users/:id`, `POST /users/cadastrar` (público), `PUT /users/atualizar` |
+| Auth       | `POST /users/logar` (público) |
+| Company    | `GET /companies`, `GET /companies/:id`, `POST /companies`, `PUT /companies`, `DELETE /companies/:id` |
+| Comment    | `GET /comments`, `GET /comments/:id`, `GET /comments/ticket/:ticketId`, `POST /comments`, `PUT /comments`, `DELETE /comments/:id` |
+| Attachment | `GET /attachments`, `GET /attachments/:id`, `POST /attachments`, `PUT /attachments`, `DELETE /attachments/:id` |
 
 > Todas as rotas exigem token JWT (`Authorization: Bearer <token>`), exceto `POST /users/cadastrar` e `POST /users/logar`.
+>
+> `Category`, `Priority` e `User` filtram automaticamente os resultados de `findAll`/`findById`/`update`/`delete` pela empresa (`company_id`) do usuário autenticado. `Ticket`, `Comment` e `Attachment` não aplicam esse filtro diretamente.
 
 ## Fluxo de trabalho (Git)
 
@@ -162,6 +180,8 @@ A aplicação está hospedada no [Render](https://render.com/), com deploy autom
 - `NODE_ENV` não definida (ou diferente de `production`) → usa `DevService` (Postgres local)
 - `NODE_ENV=production` → usa `ProdService` (lê `DATABASE_URL` da variável de ambiente, com SSL habilitado)
 
+Build command configurado no Render: `npm install --include=dev; npm run build` (necessário para instalar as devDependencies, como o `@nestjs/cli`, mesmo com `NODE_ENV=production` ativa durante o build).
+
 ## Roadmap
 
 - [x] CRUD de Ticket
@@ -170,14 +190,15 @@ A aplicação está hospedada no [Render](https://render.com/), com deploy autom
 - [x] CRUD de User
 - [x] Autenticação e autorização com JWT
 - [x] Documentação da API (Swagger)
-- [x] Testes automatizados e2e (Ticket, Category, Priority, User)
+- [x] Testes automatizados e2e (Ticket, Category, Priority, User, Comment, Attachment)
 - [x] Deploy em produção (Render)
 - [x] Multi-tenancy — Company: CRUD, relacionamentos, validação obrigatória
-- [ ] Multi-tenancy — Company: `company_id` no payload JWT
-- [ ] Multi-tenancy — Company: filtro automático de dados por empresa logada
-- [ ] CRUD de Comment (vinculado a Ticket)
-- [ ] CRUD de Attachment (vinculado a Comment)
+- [x] Multi-tenancy — Company: `company_id` no payload JWT
+- [x] Multi-tenancy — Company: filtro automático de dados por empresa logada
+- [x] CRUD de Comment (vinculado a Ticket e User)
+- [x] CRUD de Attachment (vinculado a Comment)
+- [ ] Front-end em React consumindo a API (interface de chat/atendimento)
 
 ## Autor
 
-Paulo — projeto desenvolvido para fins de aprendizado em NestJS, TypeORM, PostgreSQL e multi-tenancy.
+Paulo — projeto desenvolvido para fins de aprendizado em NestJS, TypeORM, PostgreSQL, multi-tenancy e (em breve) React.
