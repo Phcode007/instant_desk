@@ -2,12 +2,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { Comment } from '../entities/comment.entity';
+import { TicketService } from '../../ticket/services/ticket.service';
+import { UserService } from '../../user/services/user.service';
 
 @Injectable()
 export class CommentService {
   constructor(
     @InjectRepository(Comment)
     private commentRepository: Repository<Comment>,
+    private ticketService: TicketService,
+    private userService: UserService,
   ) {}
 
   async findAll(): Promise<Comment[]> {
@@ -39,11 +43,15 @@ export class CommentService {
   }
 
   async create(comment: Comment): Promise<Comment> {
+    await this.ticketService.findByIdUnscoped(comment.ticket.id);
+    await this.userService.findByIdUnscoped(comment.user.id);
     return await this.commentRepository.save(comment);
   }
 
   async update(comment: Comment): Promise<Comment> {
     await this.findById(comment.id);
+    await this.ticketService.findByIdUnscoped(comment.ticket.id);
+    await this.userService.findByIdUnscoped(comment.user.id);
     return await this.commentRepository.save(comment);
   }
 

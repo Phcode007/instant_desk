@@ -10,6 +10,6 @@ import { PriorityModule } from '../priority/priority.module';
   imports: [TypeOrmModule.forFeature([Ticket]), CategoryModule, PriorityModule],
   providers: [TicketService],
   controllers: [TicketController],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, TicketService],
 })
 export class TicketModule {}

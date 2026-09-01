@@ -2,12 +2,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { Attachment } from '../entities/attachment.entity';
+import { CommentService } from '../../comment/services/comment.service';
 
 @Injectable()
 export class AttachmentService {
   constructor(
     @InjectRepository(Attachment)
     private attachmentRepository: Repository<Attachment>,
+    private commentService: CommentService,
   ) {}
 
   async findAll(): Promise<Attachment[]> {
@@ -29,11 +31,13 @@ export class AttachmentService {
   }
 
   async create(attachment: Attachment): Promise<Attachment> {
+    await this.commentService.findById(attachment.comment.id);
     return await this.attachmentRepository.save(attachment);
   }
 
   async update(attachment: Attachment): Promise<Attachment> {
     await this.findById(attachment.id);
+    await this.commentService.findById(attachment.comment.id);
     return await this.attachmentRepository.save(attachment);
   }
 
