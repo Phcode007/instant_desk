@@ -16,9 +16,9 @@ export class Company {
   nome!: string;
 
   @IsNotEmpty()
-  @Column({ length: 14, nullable: false, unique: true })
+  @Column({ length: 14, nullable: true })
   @ApiProperty()
-  cnpj!: string;
+  cnpj?: string;
 
   @ApiProperty({ type: () => User })
   @OneToMany(() => User, (user) => user.company)
