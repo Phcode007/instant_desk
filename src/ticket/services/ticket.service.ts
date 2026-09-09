@@ -5,6 +5,13 @@ import { Ticket } from '../entities/ticket.entity';
 import { CategoryService } from '../../category/services/category.service';
 import { PriorityService } from '../../priority/services/priority.service';
 
+export interface PaginatedTickets {
+  data: Ticket[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 @Injectable()
 export class TicketService {
   constructor(
@@ -14,15 +21,38 @@ export class TicketService {
     private priorityService: PriorityService,
   ) {}
 
-  async findAll(): Promise<Ticket[]> {
-    return await this.ticketRepository.find({
-      relations: { category: true, priority: true, user: true },
-    });
+  private checkCompanyId(companyId: number | null): number {
+    if (!companyId)
+      throw new HttpException(
+        'Usuário não está vinculado a uma empresa',
+        HttpStatus.FORBIDDEN,
+      );
+    return companyId;
   }
 
-  async findById(id: number): Promise<Ticket> {
+  async findAll(
+    companyId: number | null,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedTickets> {
+    const id = this.checkCompanyId(companyId);
+
+    const [data, total] = await this.ticketRepository.findAndCount({
+      where: { user: { company: { id } } },
+      relations: { category: true, priority: true, user: true },
+      order: { data: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { data, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  async findById(id: number, companyId: number | null): Promise<Ticket> {
+    const validCompanyId = this.checkCompanyId(companyId);
+
     const ticket = await this.ticketRepository.findOne({
-      where: { id },
+      where: { id, user: { company: { id: validCompanyId } } },
       relations: { category: true, priority: true, user: true },
     });
 
@@ -44,9 +74,17 @@ export class TicketService {
     return ticket;
   }
 
-  async findByDescricao(descricao: string): Promise<Ticket[]> {
+  async findByDescricao(
+    descricao: string,
+    companyId: number | null,
+  ): Promise<Ticket[]> {
+    const id = this.checkCompanyId(companyId);
+
     return await this.ticketRepository.find({
-      where: { descricao: ILike(`%${descricao}%`) },
+      where: {
+        descricao: ILike(`%${descricao}%`),
+        user: { company: { id } },
+      },
       relations: { category: true, priority: true, user: true },
     });
   }
@@ -58,14 +96,14 @@ export class TicketService {
   }
 
   async update(ticket: Ticket): Promise<Ticket> {
-    await this.findById(ticket.id);
+    await this.findByIdUnscoped(ticket.id);
     await this.categoryService.findByIdUnscoped(ticket.category.id);
     await this.priorityService.findByIdUnscoped(ticket.priority.id);
     return await this.ticketRepository.save(ticket);
   }
 
   async delete(id: number): Promise<DeleteResult> {
-    await this.findById(id);
+    await this.findByIdUnscoped(id);
     return await this.ticketRepository.delete(id);
   }
 }

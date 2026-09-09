@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
@@ -9,11 +10,13 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
-import { TicketService } from '../services/ticket.service';
+import { TicketService, PaginatedTickets } from '../services/ticket.service';
 import { Ticket } from '../entities/ticket.entity';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
-import { UseGuards } from '@nestjs/common';
+import { CompanyId } from '../../auth/decorators/company_id.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
@@ -25,20 +28,30 @@ export class TicketController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll(): Promise<Ticket[]> {
-    return this.ticketService.findAll();
+  findAll(
+    @CompanyId() companyId: number | null,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<PaginatedTickets> {
+    return this.ticketService.findAll(companyId, page, limit);
   }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  findById(@Param('id', ParseIntPipe) id: number): Promise<Ticket> {
-    return this.ticketService.findById(id);
+  findById(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+  ): Promise<Ticket> {
+    return this.ticketService.findById(id, companyId);
   }
 
   @Get('/descricao/:descricao')
   @HttpCode(HttpStatus.OK)
-  findByDescricao(@Param('descricao') descricao: string): Promise<Ticket[]> {
-    return this.ticketService.findByDescricao(descricao);
+  findByDescricao(
+    @Param('descricao') descricao: string,
+    @CompanyId() companyId: number | null,
+  ): Promise<Ticket[]> {
+    return this.ticketService.findByDescricao(descricao, companyId);
   }
 
   @Post()
