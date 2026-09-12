@@ -4,6 +4,7 @@ import { Priority } from '../../priority/entities/priority.entity';
 import { User } from '../../user/entities/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
@@ -31,6 +32,10 @@ export class Ticket {
   @Column({ length: 20, nullable: false, default: 'aberto' })
   @ApiProperty()
   status!: string;
+
+  @CreateDateColumn()
+  @ApiProperty()
+  criadoEm!: Date;
 
   @UpdateDateColumn()
   @ApiProperty()

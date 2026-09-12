@@ -12,6 +12,18 @@ export interface PaginatedTickets {
   totalPages: number;
 }
 
+export interface TicketStatusCount {
+  status: string;
+  total: number;
+}
+
+export interface TicketStats {
+  abertosHoje: number;
+  emAndamento: number;
+  total: number;
+  porStatus: TicketStatusCount[];
+}
+
 @Injectable()
 export class TicketService {
   constructor(
@@ -105,5 +117,39 @@ export class TicketService {
   async delete(id: number): Promise<DeleteResult> {
     await this.findByIdUnscoped(id);
     return await this.ticketRepository.delete(id);
+  }
+
+  async getStats(companyId: number | null): Promise<TicketStats> {
+    const id = this.checkCompanyId(companyId);
+
+    const porStatusRaw = await this.ticketRepository
+      .createQueryBuilder('ticket')
+      .innerJoin('ticket.user', 'user')
+      .where('user.company = :id', { id })
+      .select('ticket.status', 'status')
+      .addSelect('COUNT(ticket.id)', 'total')
+      .groupBy('ticket.status')
+      .getRawMany<{ status: string; total: string }>();
+
+    const porStatus: TicketStatusCount[] = porStatusRaw.map((linha) => ({
+      status: linha.status,
+      total: Number(linha.total),
+    }));
+
+    const total = porStatus.reduce((soma, item) => soma + item.total, 0);
+    const emAndamento =
+      porStatus.find((item) => item.status === 'em andamento')?.total ?? 0;
+
+    const inicioDoDia = new Date();
+    inicioDoDia.setHours(0, 0, 0, 0);
+
+    const abertosHoje = await this.ticketRepository
+      .createQueryBuilder('ticket')
+      .innerJoin('ticket.user', 'user')
+      .where('user.company = :id', { id })
+      .andWhere('ticket.criadoEm >= :inicio', { inicio: inicioDoDia })
+      .getCount();
+
+    return { abertosHoje, emAndamento, total, porStatus };
   }
 }

@@ -13,7 +13,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { TicketService, PaginatedTickets } from '../services/ticket.service';
+import {
+  TicketService,
+  PaginatedTickets,
+  TicketStats,
+} from '../services/ticket.service';
 import { Ticket } from '../entities/ticket.entity';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { CompanyId } from '../../auth/decorators/company_id.decorator';
@@ -54,6 +58,11 @@ export class TicketController {
     return this.ticketService.findByDescricao(descricao, companyId);
   }
 
+  @Get('/stats')
+  @HttpCode(HttpStatus.OK)
+  getStats(@CompanyId() companyId: number | null): Promise<TicketStats> {
+    return this.ticketService.getStats(companyId);
+  }
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() ticket: Ticket): Promise<Ticket> {
