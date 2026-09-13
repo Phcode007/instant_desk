@@ -15,6 +15,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Comment } from '../entities/comment.entity';
 import { CommentService } from '../services/comment.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
+import { CompanyId } from '../../auth/decorators/company_id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('Comments')
@@ -25,22 +26,26 @@ export class CommentController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll(): Promise<Comment[]> {
-    return this.commentService.findAll();
+  findAll(@CompanyId() companyId: number | null): Promise<Comment[]> {
+    return this.commentService.findAll(companyId);
   }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  findById(@Param('id', ParseIntPipe) id: number): Promise<Comment> {
-    return this.commentService.findById(id);
+  findById(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+  ): Promise<Comment> {
+    return this.commentService.findById(id, companyId);
   }
 
   @Get('/ticket/:ticketId')
   @HttpCode(HttpStatus.OK)
   findByTicket(
     @Param('ticketId', ParseIntPipe) ticketId: number,
+    @CompanyId() companyId: number | null,
   ): Promise<Comment[]> {
-    return this.commentService.findByTicket(ticketId);
+    return this.commentService.findByTicket(ticketId, companyId);
   }
 
   @Post()
