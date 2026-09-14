@@ -31,13 +31,13 @@ export class AttachmentService {
   }
 
   async create(attachment: Attachment): Promise<Attachment> {
-    await this.commentService.findById(attachment.comment.id);
+    await this.commentService.findByIdUnscoped(attachment.comment.id);
     return await this.attachmentRepository.save(attachment);
   }
 
   async update(attachment: Attachment): Promise<Attachment> {
     await this.findById(attachment.id);
-    await this.commentService.findById(attachment.comment.id);
+    await this.commentService.findByIdUnscoped(attachment.comment.id);
     return await this.attachmentRepository.save(attachment);
   }
 
