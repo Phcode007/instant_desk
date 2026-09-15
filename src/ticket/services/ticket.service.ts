@@ -4,6 +4,7 @@ import { ILike, Repository, DeleteResult } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
 import { CategoryService } from '../../category/services/category.service';
 import { PriorityService } from '../../priority/services/priority.service';
+import { User } from 'src/user/entities/user.entity';
 
 export interface PaginatedTickets {
   data: Ticket[];
@@ -101,9 +102,18 @@ export class TicketService {
     });
   }
 
-  async create(ticket: Ticket): Promise<Ticket> {
+  async create(ticket: Ticket, userId: number | null): Promise<Ticket> {
+    if (!userId)
+      throw new HttpException(
+        'Usuário não autenticado',
+        HttpStatus.UNAUTHORIZED,
+      );
+
     await this.categoryService.findByIdUnscoped(ticket.category.id);
     await this.priorityService.findByIdUnscoped(ticket.priority.id);
+
+    ticket.user = { id: userId } as User;
+
     return await this.ticketRepository.save(ticket);
   }
 

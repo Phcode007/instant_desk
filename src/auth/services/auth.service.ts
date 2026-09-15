@@ -45,6 +45,7 @@ export class AuthService {
 
     const payload = {
       sub: userLogin.usuario,
+      id: buscaUser.id,
       company_id: buscaUser.company?.id ?? null,
     };
 

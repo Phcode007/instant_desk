@@ -22,6 +22,7 @@ import { Ticket } from '../entities/ticket.entity';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { CompanyId } from '../../auth/decorators/company_id.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UserId } from 'src/auth/decorators/user_id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/tickets')
@@ -65,8 +66,11 @@ export class TicketController {
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() ticket: Ticket): Promise<Ticket> {
-    return this.ticketService.create(ticket);
+  create(
+    @Body() ticket: Ticket,
+    @UserId() userId: number | null,
+  ): Promise<Ticket> {
+    return this.ticketService.create(ticket, userId);
   }
 
   @Put()
