@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, Length } from 'class-validator';
 import { Category } from '../../category/entities/category.entity';
 import { Priority } from '../../priority/entities/priority.entity';
 import { User } from '../../user/entities/user.entity';
@@ -20,12 +20,18 @@ export class Ticket {
   id!: number;
 
   @IsNotEmpty()
+  @Length(10, 100, {
+    message: 'O título deve ter entre 10 e 100 caracteres',
+  })
   @Column({ length: 100, nullable: false })
   @ApiProperty()
   titulo!: string;
 
   @IsNotEmpty()
-  @Column({ length: 100, nullable: false })
+  @Length(10, 2000, {
+    message: 'A descrição deve ter entre 10 e 2000 caracteres',
+  })
+  @Column({ length: 2000, nullable: false })
   @ApiProperty()
   descricao!: string;
 
