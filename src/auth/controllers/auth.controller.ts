@@ -6,12 +6,14 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { LocalAuthGuard } from '../guard/local-auth.guard';
 import { AuthService } from '../services/auth.service';
 import { UserLogin } from '../entities/userlogin.entity';
 import { RegisterDto } from '../dto/register.dto';
 import { User } from '../../user/entities/user.entity';
 import { ApiTags } from '@nestjs/swagger';
+import { LoginResponseDto } from '../dto/login-response.dto';
 
 @ApiTags('users')
 @Controller('/users')
@@ -21,7 +23,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/logar')
-  login(@Body() user: UserLogin): Promise<any> {
+  @ApiOkResponse({ type: LoginResponseDto })
+  login(@Body() user: UserLogin): Promise<LoginResponseDto> {
     return this.authService.login(user);
   }
 

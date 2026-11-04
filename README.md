@@ -111,15 +111,25 @@ npm run start:dev
 
 A API estará disponível em `http://localhost:4000`, e a documentação interativa em `http://localhost:4000/swagger`.
 
-### Bootstrap do multi-tenancy (primeira empresa)
+### Bootstrap da primeira empresa e do primeiro ADMIN
 
-Como `User` exige uma `Company` já existente, e criar uma `Company` exige um usuário autenticado, o **primeiro** registro do sistema precisa ser inserido manualmente uma única vez:
+Como `User` exige uma `Company` já existente, a primeira empresa precisa ser inserida manualmente uma única vez:
 
 ```sql
 INSERT INTO tb_companies (nome) VALUES ('Empresa Admin') RETURNING id;
 ```
 
-A partir daí, cadastre o primeiro usuário via `POST /users/cadastrar` apontando para esse `id`, faça login, e use o token retornado para criar as demais empresas pela API normalmente.
+A seguir, cadastre o primeiro usuário com `POST /users/cadastrar`, informando o `id` da empresa. O cadastro público sempre atribui `USER`, mesmo se o corpo incluir `role`. Faça login e use o ID do usuário retornado para executar o comando administrativo localmente:
+
+```bash
+npm run bootstrap:admin -- --company-id 1 --user-id 1
+```
+
+Troque os IDs pelos valores reais. O comando só promove um usuário `USER` já pertencente à empresa informada, registra a operação como `BOOTSTRAP`, e falha se já houver ADMIN. Não existe endpoint público para criar ou promover ADMIN.
+
+Em produção, execute o mesmo comando como tarefa manual/one-off com `NODE_ENV=production`, `DATABASE_URL` e `JWT_SECRET` configurados no ambiente seguro do deploy. Não passe credenciais como argumentos. A aplicação executa as migrations configuradas na inicialização; os registros existentes recebem `USER` e preservam seus vínculos de empresa. Execute o bootstrap depois de confirmar que a migration foi aplicada e de criar o usuário solicitante.
+
+Cada empresa deve ter seu próprio bootstrap inicial somente quando ainda não possuir ADMIN. O comando é idempotente por recusa: uma segunda execução não altera o perfil nem cria outro administrador.
 
 ## Testando a API
 
@@ -140,6 +150,7 @@ npx jest test/category.e2e-spec.ts --config test/jest-e2e.json
 npx jest test/priority.e2e-spec.ts --config test/jest-e2e.json
 npx jest test/ticket.e2e-spec.ts --config test/jest-e2e.json
 npx jest test/comment-attachment.e2e-spec.ts --config test/jest-e2e.json
+npx jest test/rbac.e2e-spec.ts --config test/jest-e2e.json
 ```
 
 Os testes usam um banco SQLite em memória (`better-sqlite3`), isolado do banco de desenvolvimento/produção, através de um `TestAppModule` dedicado (`test/testapp.module.ts`) que agrupa os módulos de funcionalidade sem trazer a conexão real de banco do `AppModule` — evitando que os testes tentem se conectar num Postgres real, independente do ambiente onde rodam.
@@ -152,14 +163,51 @@ Os testes usam um banco SQLite em memória (`better-sqlite3`), isolado do banco 
 | Category   | `GET /category`, `GET /category/:id`, `POST /category`, `PUT /category`, `DELETE /category/:id` |
 | Priority   | `GET /priorities`, `GET /priorities/:id`, `POST /priorities`, `PUT /priorities`, `DELETE /priorities/:id` |
 | User       | `GET /users/all`, `GET /users/:id`, `POST /users/cadastrar` (público), `PUT /users/atualizar` |
-| Auth       | `POST /users/logar` (público) |
+| User roles | `PUT /users/:id/role` (ADMIN da mesma empresa) |
+| Auth       | `POST /users/logar` e `POST /users/registrar` (públicos) |
 | Company    | `GET /companies`, `GET /companies/:id`, `POST /companies`, `PUT /companies`, `DELETE /companies/:id` |
 | Comment    | `GET /comments`, `GET /comments/:id`, `GET /comments/ticket/:ticketId`, `POST /comments`, `PUT /comments`, `DELETE /comments/:id` |
 | Attachment | `GET /attachments`, `GET /attachments/:id`, `POST /attachments`, `PUT /attachments`, `DELETE /attachments/:id` |
 
-> Todas as rotas exigem token JWT (`Authorization: Bearer <token>`), exceto `POST /users/cadastrar` e `POST /users/logar`.
+> Todas as rotas exigem token JWT (`Authorization: Bearer <token>`), exceto `POST /users/cadastrar`, `POST /users/registrar` e `POST /users/logar`.
 >
-> `Category`, `Priority` e `User` filtram automaticamente os resultados de `findAll`/`findById`/`update`/`delete` pela empresa (`company_id`) do usuário autenticado. `Ticket`, `Comment` e `Attachment` não aplicam esse filtro diretamente.
+> Categorias, prioridades, usuários, chamados, comentários e anexos aplicam escopo por empresa nos serviços. Para `USER`, chamados e seus comentários/anexos também são limitados aos chamados do próprio usuário.
+
+## Perfis e autorização
+
+Os perfis persistidos são `USER`, `SUPPORT` e `ADMIN`. Usuários anteriores à migration e novos cadastros públicos recebem `USER`. O endpoint `PUT /users/atualizar` altera somente os próprios dados de nome/login/senha; valores de `role` e `company` enviados no body são ignorados. Apenas `ADMIN` pode listar/consultar usuários e usar `PUT /users/:id/role`, sempre dentro da própria empresa. A alteração não permite autopromoção/autoalteração, valida o enum, impede rebaixar o último ADMIN e grava auditoria sem credenciais.
+
+| Operação | USER | SUPPORT | ADMIN |
+|----------|------|---------|-------|
+| Abrir chamados e consultar os próprios | Sim | Sim | Sim |
+| Comentar nos chamados permitidos | Sim | Sim | Sim |
+| Consultar fila/detalhes de chamados da empresa | Não | Sim | Sim |
+| Atualizar status/prioridade de chamados | Não | Sim | Sim |
+| Indicadores (`GET /tickets/stats`) | Não | Não | Sim |
+| Criar/editar categorias | Não | Não | Sim |
+| Criar/editar prioridades | Não | Sim | Sim |
+| Excluir categorias/prioridades | Não | Não | Sim |
+| Consultar/gerenciar usuários e alterar roles | Não | Não | Sim |
+| Ler/editar configurações da própria empresa | Não | Não | Sim |
+
+`GET /companies` retorna somente a empresa do token e `PUT /companies` só atualiza essa empresa. `POST /companies` e `DELETE /companies/:id` continuam no contrato, mas retornam `403`: um administrador de tenant não pode criar nem excluir outras empresas. A edição de chamados pelo endpoint existente `PUT /tickets` aceita status e prioridade; outros campos e vínculos enviados não substituem o registro persistido.
+
+O login `POST /users/logar` preserva o token prefixado com `Bearer` e a expiração de uma hora, e agora inclui `role` na resposta. O JWT contém `sub`, `id`, `company_id` e `role`, mas a estratégia recarrega usuário, empresa e perfil do banco em cada requisição; tokens emitidos antes de rebaixamentos não preservam permissões revogadas.
+
+Exemplo sanitizado:
+
+```json
+{
+    "id": 12,
+    "nome": "Pessoa Exemplo",
+    "usuario": "pessoa@example.com",
+    "role": "USER",
+    "senha": "",
+    "token": "Bearer <JWT>"
+}
+```
+
+`senha` permanece vazia apenas por compatibilidade com o contrato anterior; nenhuma senha ou token é gravado na auditoria.
 
 ## Fluxo de trabalho (Git)
 
