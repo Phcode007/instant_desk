@@ -8,6 +8,8 @@ import { User } from '../../user/entities/user.entity';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Attachment } from '../../attachment/entities/attachment.entity';
 import { AddUserRole1762214400000 } from '../migrations/1762214400000-AddUserRole';
+import { UserRoleAudit } from '../../user/entities/user-role-audit.entity';
+import { CreateUserRoleAudits1762214401000 } from '../migrations/1762214401000-CreateUserRoleAudits';
 
 @Injectable()
 export class DevService implements TypeOrmOptionsFactory {
@@ -27,8 +29,12 @@ export class DevService implements TypeOrmOptionsFactory {
         Company,
         Comment,
         Attachment,
+        UserRoleAudit,
       ],
-      migrations: [AddUserRole1762214400000],
+      migrations: [
+        AddUserRole1762214400000,
+        CreateUserRoleAudits1762214401000,
+      ],
       migrationsRun: true,
       synchronize: true,
     };

@@ -6,6 +6,7 @@ import { Bcrypt } from '../../auth/bcrypt/bcrypt';
 import { CompanyService } from '../../company/services/company.service';
 import { Company } from '../../company/entities/company.entity';
 import { UserRole } from '../enums/user-role.enum';
+import { UserRoleAudit } from '../entities/user-role-audit.entity';
 
 @Injectable()
 export class UserService {
@@ -44,21 +45,48 @@ export class UserService {
       .getOne();
   }
 
-  async findAll(companyId: number | null): Promise<User[]> {
+  private async assertAdmin(
+    administratorId: number,
+    companyId: number,
+  ): Promise<void> {
+    const administrator = await this.findForAuthentication(administratorId);
+
+    if (
+      !administrator ||
+      administrator.role !== UserRole.ADMIN ||
+      administrator.company?.id !== companyId
+    ) {
+      throw new HttpException(
+        'Acesso permitido somente a administradores da empresa',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+
+  async findAll(
+    companyId: number | null,
+    administratorId: number,
+  ): Promise<User[]> {
     const id = this.checkCompanyId(companyId);
+    await this.assertAdmin(administratorId, id);
 
     return await this.userRepository.find({
       where: { company: { id } },
-      relations: { ticket: true },
+      select: { id: true, nome: true, usuario: true, role: true },
     });
   }
 
-  async findById(id: number, companyId: number | null): Promise<User> {
+  async findById(
+    id: number,
+    companyId: number | null,
+    administratorId: number,
+  ): Promise<User> {
     const validCompanyId = this.checkCompanyId(companyId);
+    await this.assertAdmin(administratorId, validCompanyId);
 
     const user = await this.userRepository.findOne({
       where: { id, company: { id: validCompanyId } },
-      relations: { ticket: true },
+      select: { id: true, nome: true, usuario: true, role: true },
     });
 
     if (!user)
@@ -143,17 +171,33 @@ export class UserService {
       }
 
       await manager.update(User, { id: userId }, { role: UserRole.ADMIN });
+      await manager.save(UserRoleAudit, {
+        administratorId: null,
+        affectedUserId: userId,
+        companyId,
+        previousRole: UserRole.USER,
+        newRole: UserRole.ADMIN,
+        source: 'BOOTSTRAP',
+      });
     });
   }
 
-  async update(user: User, companyId: number | null): Promise<User> {
-    if (!user.company || !user.company.id)
+  async update(
+    user: User,
+    companyId: number | null,
+    currentUserId: number,
+  ): Promise<User> {
+    if (user.id !== currentUserId) {
       throw new HttpException(
-        'A empresa (company) é obrigatória para atualizar um usuário',
-        HttpStatus.BAD_REQUEST,
+        'Não é permitido alterar os dados de outro usuário',
+        HttpStatus.FORBIDDEN,
       );
+    }
 
-    await this.findById(user.id, companyId);
+    const existing = await this.findByIdUnscoped(user.id);
+    if (existing.company?.id !== this.checkCompanyId(companyId)) {
+      throw new HttpException('Usuário não encontrado!', HttpStatus.NOT_FOUND);
+    }
 
     const buscaUser = await this.findByUsuario(user.usuario);
 
@@ -163,10 +207,96 @@ export class UserService {
         HttpStatus.BAD_REQUEST,
       );
 
-    await this.companyService.findById(user.company.id);
+    existing.nome = user.nome;
+    existing.usuario = user.usuario;
+    if (user.senha) {
+      existing.senha = await this.bcrypt.criptografarSenha(user.senha);
+    }
+    return await this.userRepository.save(existing);
+  }
 
-    user.senha = await this.bcrypt.criptografarSenha(user.senha);
-    user.role = UserRole.USER;
-    return await this.userRepository.save(user);
+  async changeRole(
+    targetUserId: number,
+    targetRole: UserRole,
+    companyId: number | null,
+    administratorId: number,
+  ): Promise<User> {
+    const validCompanyId = this.checkCompanyId(companyId);
+
+    if (!Object.values(UserRole).includes(targetRole)) {
+      throw new HttpException('Perfil inválido', HttpStatus.BAD_REQUEST);
+    }
+    if (targetUserId === administratorId) {
+      throw new HttpException(
+        'Não é permitido alterar o próprio perfil',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const companyQuery = manager
+        .getRepository(Company)
+        .createQueryBuilder('company')
+        .where('company.id = :companyId', { companyId: validCompanyId });
+      if (this.dataSource.options.type === 'postgres') {
+        companyQuery.setLock('pessimistic_write');
+      }
+      if (!(await companyQuery.getOne())) {
+        throw new HttpException('Empresa não encontrada!', HttpStatus.NOT_FOUND);
+      }
+
+      const administrator = await manager.findOne(User, {
+        where: {
+          id: administratorId,
+          company: { id: validCompanyId },
+          role: UserRole.ADMIN,
+        },
+      });
+      if (!administrator) {
+        throw new HttpException(
+          'Acesso permitido somente a administradores da empresa',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      const target = await manager.findOne(User, {
+        where: { id: targetUserId, company: { id: validCompanyId } },
+      });
+      if (!target) {
+        throw new HttpException(
+          'Usuário não encontrado nesta empresa',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (target.role === targetRole) {
+        return target;
+      }
+
+      if (target.role === UserRole.ADMIN && targetRole !== UserRole.ADMIN) {
+        const administratorCount = await manager.count(User, {
+          where: { company: { id: validCompanyId }, role: UserRole.ADMIN },
+        });
+        if (administratorCount <= 1) {
+          throw new HttpException(
+            'Não é possível rebaixar o último administrador da empresa',
+            HttpStatus.CONFLICT,
+          );
+        }
+      }
+
+      const previousRole = target.role;
+      target.role = targetRole;
+      await manager.save(User, target);
+      await manager.save(UserRoleAudit, {
+        administratorId,
+        affectedUserId: target.id,
+        companyId: validCompanyId,
+        previousRole,
+        newRole: targetRole,
+        source: 'ADMIN',
+      });
+
+      return target;
+    });
   }
 }
