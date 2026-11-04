@@ -1,4 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
+import { Category } from '../../category/entities/category.entity';
+import { Priority } from '../../priority/entities/priority.entity';
 import { UserService } from '../../user/services/user.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Bcrypt } from '../bcrypt/bcrypt';
@@ -8,6 +10,15 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { Company } from '../../company/entities/company.entity';
 import { User } from '../../user/entities/user.entity';
 import { RegisterDto } from '../dto/register.dto';
+
+
+const CATEGORIAS_PADRAO = [
+  'Geral',
+  'Acesso e Permissões',
+  'Erro no Sistema',
+  'Dúvida',
+];
+const PRIORIDADES_PADRAO = ['Baixa', 'Média', 'Alta'];
 
 @Injectable()
 export class AuthService {
@@ -81,12 +92,24 @@ export class AuthService {
         where: { cnpj: cnpjLimpo },
       });
 
-      if (!company) {
-        company = queryRunner.manager.create(Company, {
-          nome: dto.nomeEmpresa,
-          cnpj: cnpjLimpo,
-        });
-        company = await queryRunner.manager.save(Company, company);
+            if (!company) {
+        const novaEmpresa = await queryRunner.manager.save(
+          Company,
+          queryRunner.manager.create(Company, {
+            nome: dto.nomeEmpresa,
+            cnpj: cnpjLimpo,
+          }),
+        );
+        company = novaEmpresa;
+
+        const categorias = CATEGORIAS_PADRAO.map((nome) =>
+          queryRunner.manager.create(Category, { nome, company: novaEmpresa }),
+        );
+        const prioridades = PRIORIDADES_PADRAO.map((nome) =>
+          queryRunner.manager.create(Priority, { nome, company: novaEmpresa }),
+        );
+        await queryRunner.manager.save(Category, categorias);
+        await queryRunner.manager.save(Priority, prioridades);
       }
 
       const senhaCriptografada = await this.bcrypt.criptografarSenha(dto.senha);
