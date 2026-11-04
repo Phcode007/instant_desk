@@ -138,7 +138,10 @@ export class UserService {
       }
 
       if (!(await companyQuery.getOne())) {
-        throw new HttpException('Empresa não encontrada!', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Empresa não encontrada!',
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       const existingAdmin = await manager.findOne(User, {
@@ -242,7 +245,10 @@ export class UserService {
         companyQuery.setLock('pessimistic_write');
       }
       if (!(await companyQuery.getOne())) {
-        throw new HttpException('Empresa não encontrada!', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Empresa não encontrada!',
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       const administrator = await manager.findOne(User, {

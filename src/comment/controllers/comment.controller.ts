@@ -16,6 +16,11 @@ import { Comment } from '../entities/comment.entity';
 import { CommentService } from '../services/comment.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { CompanyId } from '../../auth/decorators/company_id.decorator';
+import { UserId } from '../../auth/decorators/user_id.decorator';
+import { CurrentRole } from '../../auth/decorators/current_role.decorator';
+import { UserRole } from '../../user/enums/user-role.enum';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guard/roles.guard';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('Comments')
@@ -26,8 +31,12 @@ export class CommentController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll(@CompanyId() companyId: number | null): Promise<Comment[]> {
-    return this.commentService.findAll(companyId);
+  findAll(
+    @CompanyId() companyId: number | null,
+    @UserId() userId: number | null,
+    @CurrentRole() role: UserRole | null,
+  ): Promise<Comment[]> {
+    return this.commentService.findAll(companyId, userId, role);
   }
 
   @Get('/:id')
@@ -35,8 +44,10 @@ export class CommentController {
   findById(
     @Param('id', ParseIntPipe) id: number,
     @CompanyId() companyId: number | null,
+    @UserId() userId: number | null,
+    @CurrentRole() role: UserRole | null,
   ): Promise<Comment> {
-    return this.commentService.findById(id, companyId);
+    return this.commentService.findById(id, companyId, userId, role);
   }
 
   @Get('/ticket/:ticketId')
@@ -44,25 +55,46 @@ export class CommentController {
   findByTicket(
     @Param('ticketId', ParseIntPipe) ticketId: number,
     @CompanyId() companyId: number | null,
+    @UserId() userId: number | null,
+    @CurrentRole() role: UserRole | null,
   ): Promise<Comment[]> {
-    return this.commentService.findByTicket(ticketId, companyId);
+    return this.commentService.findByTicket(ticketId, companyId, userId, role);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() comment: Comment): Promise<Comment> {
-    return this.commentService.create(comment);
+  create(
+    @Body() comment: Comment,
+    @CompanyId() companyId: number | null,
+    @UserId() userId: number | null,
+    @CurrentRole() role: UserRole | null,
+  ): Promise<Comment> {
+    return this.commentService.create(comment, companyId, userId, role);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPPORT, UserRole.ADMIN)
   @Put()
   @HttpCode(HttpStatus.OK)
-  update(@Body() comment: Comment): Promise<Comment> {
-    return this.commentService.update(comment);
+  update(
+    @Body() comment: Comment,
+    @CompanyId() companyId: number | null,
+    @CurrentRole() role: UserRole | null,
+    @UserId() userId: number | null,
+  ): Promise<Comment> {
+    return this.commentService.update(comment, companyId, userId, role);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPPORT, UserRole.ADMIN)
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.commentService.delete(id);
+  delete(
+    @Param('id', ParseIntPipe) id: number,
+    @CompanyId() companyId: number | null,
+    @CurrentRole() role: UserRole | null,
+    @UserId() userId: number | null,
+  ) {
+    return this.commentService.delete(id, companyId, userId, role);
   }
 }

@@ -26,13 +26,17 @@ async function bootstrap(): Promise<void> {
 
   try {
     await app.get(UserService).bootstrapAdmin(companyId, userId);
-    console.log(`ADMIN inicial criado para usuário ${userId}, empresa ${companyId}.`);
+    console.log(
+      `ADMIN inicial criado para usuário ${userId}, empresa ${companyId}.`,
+    );
   } finally {
     await app.close();
   }
 }
 
 bootstrap().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : 'Falha ao criar ADMIN inicial');
+  console.error(
+    error instanceof Error ? error.message : 'Falha ao criar ADMIN inicial',
+  );
   process.exitCode = 1;
 });

@@ -19,6 +19,7 @@ import { CompanyId } from '../../auth/decorators/company_id.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { RolesGuard } from '../../auth/guard/roles.guard';
 import { UserRole } from '../../user/enums/user-role.enum';
+import { CurrentRole } from '../../auth/decorators/current_role.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/priorities')
@@ -46,8 +47,12 @@ export class PriorityController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.SUPPORT, UserRole.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() priority: Priority): Promise<Priority> {
-    return this.priorityService.create(priority);
+  create(
+    @Body() priority: Priority,
+    @CompanyId() companyId: number | null,
+    @CurrentRole() role: UserRole | null,
+  ): Promise<Priority> {
+    return this.priorityService.create(priority, companyId, role);
   }
 
   @Put()
@@ -57,8 +62,9 @@ export class PriorityController {
   update(
     @Body() priority: Priority,
     @CompanyId() companyId: number | null,
+    @CurrentRole() role: UserRole | null,
   ): Promise<Priority> {
-    return this.priorityService.update(priority, companyId);
+    return this.priorityService.update(priority, companyId, role);
   }
 
   @Delete('/:id')
@@ -68,7 +74,8 @@ export class PriorityController {
   delete(
     @Param('id', ParseIntPipe) id: number,
     @CompanyId() companyId: number | null,
+    @CurrentRole() role: UserRole | null,
   ) {
-    return this.priorityService.delete(id, companyId);
+    return this.priorityService.delete(id, companyId, role);
   }
 }

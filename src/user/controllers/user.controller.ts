@@ -33,6 +33,12 @@ import { ChangeUserRoleDto } from '../dto/change-user-role.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  private withoutPassword(user: User): Omit<User, 'senha'> {
+    const response = { ...user };
+    Reflect.deleteProperty(response, 'senha');
+    return response;
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('/all')
@@ -60,8 +66,7 @@ export class UserController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() user: User): Promise<Omit<User, 'senha'>> {
     const created = await this.userService.create(user);
-    const { senha, ...resposta } = created;
-    return resposta;
+    return this.withoutPassword(created);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -77,8 +82,7 @@ export class UserController {
       companyId,
       currentUserId,
     );
-    const { senha, ...resposta } = updated;
-    return resposta;
+    return this.withoutPassword(updated);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -89,7 +93,9 @@ export class UserController {
     summary: 'Altera o perfil de usuário da própria empresa (ADMIN)',
   })
   @ApiOkResponse({ description: 'Perfil alterado e registrado em auditoria.' })
-  @ApiForbiddenResponse({ description: 'Requer ADMIN e não permite autoalteração.' })
+  @ApiForbiddenResponse({
+    description: 'Requer ADMIN e não permite autoalteração.',
+  })
   async changeRole(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ChangeUserRoleDto,
@@ -102,7 +108,6 @@ export class UserController {
       companyId,
       administratorId,
     );
-    const { senha, ...resposta } = updated;
-    return resposta;
+    return this.withoutPassword(updated);
   }
 }

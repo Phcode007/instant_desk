@@ -16,10 +16,7 @@ export class ProdService implements TypeOrmOptionsFactory {
       },
       synchronize: true,
       autoLoadEntities: true,
-      migrations: [
-        AddUserRole1762214400000,
-        CreateUserRoleAudits1762214401000,
-      ],
+      migrations: [AddUserRole1762214400000, CreateUserRoleAudits1762214401000],
       migrationsRun: true,
     };
   }

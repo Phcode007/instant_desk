@@ -12,7 +12,6 @@ import { User } from '../../user/entities/user.entity';
 import { RegisterDto } from '../dto/register.dto';
 import { UserRole } from '../../user/enums/user-role.enum';
 
-
 const CATEGORIAS_PADRAO = [
   'Geral',
   'Acesso e Permissões',
@@ -42,8 +41,7 @@ export class AuthService {
     );
 
     if (buscaUser && matchPassword) {
-      const { senha, ...resposta } = buscaUser;
-      return resposta;
+      return { ...buscaUser, senha: '' };
     }
 
     return null;
@@ -95,7 +93,7 @@ export class AuthService {
         where: { cnpj: cnpjLimpo },
       });
 
-            if (!company) {
+      if (!company) {
         const novaEmpresa = await queryRunner.manager.save(
           Company,
           queryRunner.manager.create(Company, {
@@ -128,7 +126,8 @@ export class AuthService {
 
       await queryRunner.commitTransaction();
 
-      const { senha, ...resposta } = user;
+      const resposta = { ...user };
+      Reflect.deleteProperty(resposta, 'senha');
       return resposta;
     } catch (error) {
       await queryRunner.rollbackTransaction();

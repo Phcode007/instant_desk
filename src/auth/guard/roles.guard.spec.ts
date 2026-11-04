@@ -26,9 +26,9 @@ describe('RolesGuard', () => {
         .mockReturnValue([UserRole.SUPPORT, UserRole.ADMIN]),
     } as unknown as Reflector;
 
-    expect(new RolesGuard(reflector).canActivate(context(UserRole.SUPPORT))).toBe(
-      true,
-    );
+    expect(
+      new RolesGuard(reflector).canActivate(context(UserRole.SUPPORT)),
+    ).toBe(true);
   });
 
   it('denies a disallowed or missing role', () => {

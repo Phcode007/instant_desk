@@ -59,8 +59,13 @@ export class CategoryService {
     return category;
   }
 
-  async create(category: Category): Promise<Category> {
-    await this.companyService.findById(category.company.id);
+  async create(
+    category: Category,
+    companyId: number | null,
+  ): Promise<Category> {
+    const id = this.checkCompanyId(companyId);
+    await this.companyService.findById(id);
+    category.company = { id } as Category['company'];
     return await this.categoryRepository.save(category);
   }
 
@@ -69,7 +74,9 @@ export class CategoryService {
     companyId: number | null,
   ): Promise<Category> {
     await this.findById(category.id, companyId);
-    await this.companyService.findById(category.company.id);
+    category.company = {
+      id: this.checkCompanyId(companyId),
+    } as Category['company'];
     return await this.categoryRepository.save(category);
   }
 

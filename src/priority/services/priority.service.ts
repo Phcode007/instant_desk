@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { Priority } from '../entities/priority.entity';
 import { CompanyService } from '../../company/services/company.service';
+import { UserRole } from '../../user/enums/user-role.enum';
 
 @Injectable()
 export class PriorityService {
@@ -19,6 +20,12 @@ export class PriorityService {
         HttpStatus.FORBIDDEN,
       );
     return companyId;
+  }
+
+  private checkSupportRole(role: UserRole | null): void {
+    if (role !== UserRole.SUPPORT && role !== UserRole.ADMIN) {
+      throw new HttpException('Perfil sem permissão', HttpStatus.FORBIDDEN);
+    }
   }
 
   async findAll(companyId: number | null): Promise<Priority[]> {
@@ -59,21 +66,39 @@ export class PriorityService {
     return priority;
   }
 
-  async create(priority: Priority): Promise<Priority> {
-    await this.companyService.findById(priority.company.id);
+  async create(
+    priority: Priority,
+    companyId: number | null,
+    role: UserRole | null,
+  ): Promise<Priority> {
+    this.checkSupportRole(role);
+    const id = this.checkCompanyId(companyId);
+    await this.companyService.findById(id);
+    priority.company = { id } as Priority['company'];
     return await this.priorityRepository.save(priority);
   }
 
   async update(
     priority: Priority,
     companyId: number | null,
+    role: UserRole | null,
   ): Promise<Priority> {
+    this.checkSupportRole(role);
     await this.findById(priority.id, companyId);
-    await this.companyService.findById(priority.company.id);
+    priority.company = {
+      id: this.checkCompanyId(companyId),
+    } as Priority['company'];
     return await this.priorityRepository.save(priority);
   }
 
-  async delete(id: number, companyId: number | null): Promise<DeleteResult> {
+  async delete(
+    id: number,
+    companyId: number | null,
+    role: UserRole | null,
+  ): Promise<DeleteResult> {
+    if (role !== UserRole.ADMIN) {
+      throw new HttpException('Perfil sem permissão', HttpStatus.FORBIDDEN);
+    }
     await this.findById(id, companyId);
     return await this.priorityRepository.delete(id);
   }

@@ -8,6 +8,7 @@ import { TestAppModule } from './testapp.module';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from '../src/company/entities/company.entity';
+import { UserService } from '../src/user/services/user.service';
 
 describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
   let token: any;
@@ -16,6 +17,7 @@ describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
   let priorityId: any;
   let ticketId: any;
   let userId: any;
+  let rootUserId: number;
   let commentId: any;
   let attachmentId: any;
   let app: INestApplication;
@@ -51,7 +53,7 @@ describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
     });
 
     // 1) Cadastro do primeiro usuário, já vinculado à company de bootstrap
-    await request(app.getHttpServer())
+    const rootResponse = await request(app.getHttpServer())
       .post('/users/cadastrar')
       .send({
         nome: 'Root',
@@ -59,6 +61,8 @@ describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
         senha: 'rootroot',
         company: { id: bootstrapCompany.id },
       });
+    rootUserId = rootResponse.body.id;
+    await app.get(UserService).bootstrapAdmin(bootstrapCompany.id, rootUserId);
 
     const respostaLogin = await request(app.getHttpServer())
       .post('/users/logar')
@@ -69,13 +73,7 @@ describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
 
     token = respostaLogin.body.token;
 
-    // 2) Criar a Company de teste "de verdade", agora já autenticado
-    const respostaCompany = await request(app.getHttpServer())
-      .post('/companies')
-      .set('Authorization', `${token}`)
-      .send({ nome: 'Empresa Teste' });
-
-    companyId = respostaCompany.body.id;
+    companyId = bootstrapCompany.id;
 
     // 3) Criar Category e Priority vinculadas à Company
     const respostaCategory = await request(app.getHttpServer())
@@ -157,8 +155,8 @@ describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
       .expect(404);
   });
 
-  it('04 - Não Deve Cadastrar Comment com User Inexistente', async () => {
-    await request(app.getHttpServer())
+  it('04 - Ignora o autor enviado pelo cliente', async () => {
+    const resposta = await request(app.getHttpServer())
       .post('/comments')
       .set('Authorization', `${token}`)
       .send({
@@ -166,7 +164,9 @@ describe('Testes dos Módulos Comment e Attachment (e2e)', () => {
         ticket: { id: ticketId },
         user: { id: 99999 },
       })
-      .expect(404);
+      .expect(201);
+
+    expect(resposta.body.user.id).toBe(rootUserId);
   });
 
   it('05 - Deve Listar todos os Comments', async () => {

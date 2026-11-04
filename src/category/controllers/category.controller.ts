@@ -46,8 +46,11 @@ export class CategoryController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() category: Category): Promise<Category> {
-    return this.categoryService.create(category);
+  create(
+    @Body() category: Category,
+    @CompanyId() companyId: number | null,
+  ): Promise<Category> {
+    return this.categoryService.create(category, companyId);
   }
 
   @Put()

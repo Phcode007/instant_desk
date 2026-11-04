@@ -14,6 +14,26 @@ export class CompanyService {
     return await this.companyRepository.find();
   }
 
+  async findForCompany(companyId: number | null): Promise<Company[]> {
+    if (!companyId) {
+      throw new HttpException(
+        'Usuário não está vinculado a uma empresa',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    return [await this.findById(companyId)];
+  }
+
+  async findByIdForCompany(
+    id: number,
+    companyId: number | null,
+  ): Promise<Company> {
+    if (!companyId || id !== companyId) {
+      throw new HttpException('Empresa não encontrada!', HttpStatus.NOT_FOUND);
+    }
+    return this.findById(id);
+  }
+
   async findById(id: number): Promise<Company> {
     const company = await this.companyRepository.findOne({
       where: { id },
@@ -24,17 +44,25 @@ export class CompanyService {
 
     return company;
   }
-  async create(company: Company): Promise<Company> {
-    return await this.companyRepository.save(company);
+  create(): Promise<Company> {
+    throw new HttpException(
+      'Administradores não podem criar outras empresas',
+      HttpStatus.FORBIDDEN,
+    );
   }
 
-  async update(company: Company): Promise<Company> {
-    await this.findById(company.id);
-    return await this.companyRepository.save(company);
+  async update(company: Company, companyId: number | null): Promise<Company> {
+    const existing = await this.findByIdForCompany(company.id, companyId);
+    existing.nome = company.nome;
+    existing.cnpj = company.cnpj;
+    return this.companyRepository.save(existing);
   }
 
-  async delete(id: number): Promise<DeleteResult> {
-    await this.findById(id);
-    return await this.companyRepository.delete(id);
+  async delete(id: number, companyId: number | null): Promise<DeleteResult> {
+    await this.findByIdForCompany(id, companyId);
+    throw new HttpException(
+      'A exclusão da empresa não é permitida por esta API',
+      HttpStatus.FORBIDDEN,
+    );
   }
 }

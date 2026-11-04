@@ -1,4 +1,9 @@
-import { CreateDateColumn, Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+} from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 
 @Entity({ name: 'tb_user_role_audits' })

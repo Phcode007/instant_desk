@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { Company } from '../src/company/entities/company.entity';
 import { UserService } from '../src/user/services/user.service';
 import { UserRole } from '../src/user/enums/user-role.enum';
+import { User } from '../src/user/entities/user.entity';
 
 describe('Testes dos Módulos User e Auth (e2e)', () => {
   let token: any;
@@ -42,7 +43,9 @@ describe('Testes dos Módulos User e Auth (e2e)', () => {
     const companyRepository = app.get<Repository<Company>>(
       getRepositoryToken(Company),
     );
-    const company = await companyRepository.save({ nome: 'Empresa Auth Teste' });
+    const company = await companyRepository.save({
+      nome: 'Empresa Auth Teste',
+    });
     empresaId = company.id;
   });
 
@@ -178,9 +181,8 @@ describe('Testes dos Módulos User e Auth (e2e)', () => {
       .set('Authorization', token)
       .expect(200);
 
-    expect(response.body.every((user: { senha?: string }) => !user.senha)).toBe(
-      true,
-    );
+    const users = response.body as Array<{ senha?: string }>;
+    expect(users.every((user) => !user.senha)).toBe(true);
   });
 
   it('10 - ADMIN não pode alterar seu próprio perfil', async () => {
@@ -193,7 +195,7 @@ describe('Testes dos Módulos User e Auth (e2e)', () => {
 
   it('12 - Bootstrap repetido é recusado', async () => {
     await expect(
-      app.get(UserService).bootstrapAdmin(empresaId, usuarioId),
+      app.get<UserService>(UserService).bootstrapAdmin(empresaId, usuarioId),
     ).rejects.toMatchObject({ status: 409 });
   });
 
@@ -230,5 +232,61 @@ describe('Testes dos Módulos User e Auth (e2e)', () => {
         expect('Root Atualizado').toEqual(resposta.body.nome);
         expect(resposta.body.role).toBe(UserRole.ADMIN);
       });
+  });
+
+  it('15 - Mantém um ADMIN ativo após rebaixamentos', async () => {
+    await request(app.getHttpServer())
+      .put(`/users/${supportId}/role`)
+      .set('Authorization', token)
+      .send({ role: UserRole.ADMIN })
+      .expect(200);
+
+    const thirdUser = await request(app.getHttpServer())
+      .post('/users/cadastrar')
+      .send({
+        nome: 'Terceiro administrador',
+        usuario: 'terceiro@teste.com',
+        senha: 'terceiro123',
+        company: { id: empresaId },
+      })
+      .expect(201);
+
+    const secondAdminLogin = await request(app.getHttpServer())
+      .post('/users/logar')
+      .send({ usuario: 'solicitante@teste.com', senha: 'solicitante123' })
+      .expect(200);
+    await request(app.getHttpServer())
+      .put(`/users/${thirdUser.body.id as number}/role`)
+      .set('Authorization', token)
+      .send({ role: UserRole.ADMIN })
+      .expect(200);
+    const thirdAdminLogin = await request(app.getHttpServer())
+      .post('/users/logar')
+      .send({ usuario: 'terceiro@teste.com', senha: 'terceiro123' })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .put(`/users/${usuarioId}/role`)
+      .set('Authorization', secondAdminLogin.body.token as string)
+      .send({ role: UserRole.USER })
+      .expect(200);
+
+    const userRepository = app.get<Repository<User>>(getRepositoryToken(User));
+    const remainingAdmins = await userRepository.find({
+      where: { company: { id: empresaId }, role: UserRole.ADMIN },
+    });
+    expect(remainingAdmins).toHaveLength(2);
+
+    await request(app.getHttpServer())
+      .put(`/users/${supportId}/role`)
+      .set('Authorization', thirdAdminLogin.body.token as string)
+      .send({ role: UserRole.USER })
+      .expect(200);
+
+    const finalAdmins = await userRepository.find({
+      where: { company: { id: empresaId }, role: UserRole.ADMIN },
+    });
+    expect(finalAdmins).toHaveLength(1);
+    expect(finalAdmins[0].id).toBe(thirdUser.body.id);
   });
 });

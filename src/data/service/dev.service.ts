@@ -31,10 +31,7 @@ export class DevService implements TypeOrmOptionsFactory {
         Attachment,
         UserRoleAudit,
       ],
-      migrations: [
-        AddUserRole1762214400000,
-        CreateUserRoleAudits1762214401000,
-      ],
+      migrations: [AddUserRole1762214400000, CreateUserRoleAudits1762214401000],
       migrationsRun: true,
       synchronize: true,
     };

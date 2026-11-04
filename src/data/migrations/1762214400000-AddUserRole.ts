@@ -1,8 +1,4 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  TableColumn,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class AddUserRole1762214400000 implements MigrationInterface {
   async up(queryRunner: QueryRunner): Promise<void> {
