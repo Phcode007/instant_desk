@@ -1,9 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Bcrypt } from '../../auth/bcrypt/bcrypt';
 import { CompanyService } from '../../company/services/company.service';
+import { Company } from '../../company/entities/company.entity';
+import { UserRole } from '../enums/user-role.enum';
 
 @Injectable()
 export class UserService {
@@ -12,6 +14,7 @@ export class UserService {
     private userRepository: Repository<User>,
     private bcrypt: Bcrypt,
     private companyService: CompanyService,
+    private dataSource: DataSource,
   ) {}
 
   private checkCompanyId(companyId: number | null): number {
@@ -82,7 +85,56 @@ export class UserService {
     await this.companyService.findById(user.company.id);
 
     user.senha = await this.bcrypt.criptografarSenha(user.senha);
+    user.role = UserRole.USER;
     return await this.userRepository.save(user);
+  }
+
+  async bootstrapAdmin(companyId: number, userId: number): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      const companyQuery = manager
+        .getRepository(Company)
+        .createQueryBuilder('company')
+        .where('company.id = :companyId', { companyId });
+
+      if (this.dataSource.options.type === 'postgres') {
+        companyQuery.setLock('pessimistic_write');
+      }
+
+      if (!(await companyQuery.getOne())) {
+        throw new HttpException('Empresa não encontrada!', HttpStatus.NOT_FOUND);
+      }
+
+      const existingAdmin = await manager.findOne(User, {
+        where: { company: { id: companyId }, role: UserRole.ADMIN },
+      });
+
+      if (existingAdmin) {
+        throw new HttpException(
+          'A empresa já possui um administrador',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      const user = await manager.findOne(User, {
+        where: { id: userId, company: { id: companyId } },
+      });
+
+      if (!user) {
+        throw new HttpException(
+          'Usuário não encontrado nesta empresa',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.role !== UserRole.USER) {
+        throw new HttpException(
+          'Somente um usuário USER pode ser o administrador inicial',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      await manager.update(User, { id: userId }, { role: UserRole.ADMIN });
+    });
   }
 
   async update(user: User, companyId: number | null): Promise<User> {
