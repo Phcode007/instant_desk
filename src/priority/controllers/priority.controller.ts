@@ -16,6 +16,9 @@ import { PriorityService } from '../services/priority.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CompanyId } from '../../auth/decorators/company_id.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guard/roles.guard';
+import { UserRole } from '../../user/enums/user-role.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/priorities')
@@ -40,12 +43,16 @@ export class PriorityController {
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPPORT, UserRole.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   create(@Body() priority: Priority): Promise<Priority> {
     return this.priorityService.create(priority);
   }
 
   @Put()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPPORT, UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   update(
     @Body() priority: Priority,
@@ -55,6 +62,8 @@ export class PriorityController {
   }
 
   @Delete('/:id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(
     @Param('id', ParseIntPipe) id: number,

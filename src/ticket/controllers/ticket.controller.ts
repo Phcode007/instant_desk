@@ -23,6 +23,9 @@ import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { CompanyId } from '../../auth/decorators/company_id.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UserId } from 'src/auth/decorators/user_id.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guard/roles.guard';
+import { UserRole } from '../../user/enums/user-role.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/tickets')
@@ -60,6 +63,8 @@ export class TicketController {
   }
 
   @Get('/stats')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   getStats(@CompanyId() companyId: number | null): Promise<TicketStats> {
     return this.ticketService.getStats(companyId);
@@ -74,12 +79,16 @@ export class TicketController {
   }
 
   @Put()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPPORT, UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   update(@Body() ticket: Ticket): Promise<Ticket> {
     return this.ticketService.update(ticket);
   }
 
   @Delete('/:id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.ticketService.delete(id);

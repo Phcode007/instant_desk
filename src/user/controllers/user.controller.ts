@@ -15,6 +15,9 @@ import { User } from '../entities/user.entity';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CompanyId } from '../../auth/decorators/company_id.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guard/roles.guard';
+import { UserRole } from '../enums/user-role.enum';
 
 @ApiTags('Users')
 @Controller('/users')
@@ -22,14 +25,16 @@ import { CompanyId } from '../../auth/decorators/company_id.decorator';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('/all')
   @HttpCode(HttpStatus.OK)
   findAll(@CompanyId() companyId: number | null): Promise<User[]> {
     return this.userService.findAll(companyId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   findById(
@@ -47,7 +52,8 @@ export class UserController {
     return resposta;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Put('/atualizar')
   @HttpCode(HttpStatus.OK)
   update(

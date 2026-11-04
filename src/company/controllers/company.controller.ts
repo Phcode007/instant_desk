@@ -15,8 +15,12 @@ import { Company } from '../entities/company.entity';
 import { CompanyService } from '../services/company.service';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guard/roles.guard';
+import { UserRole } from '../../user/enums/user-role.enum';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
 @ApiTags('Companies')
 @ApiBearerAuth()
 @Controller('/companies')
