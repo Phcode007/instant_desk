@@ -10,6 +10,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { Company } from '../../company/entities/company.entity';
 import { User } from '../../user/entities/user.entity';
 import { RegisterDto } from '../dto/register.dto';
+import { UserRole } from '../../user/enums/user-role.enum';
 
 
 const CATEGORIAS_PADRAO = [
@@ -58,18 +59,20 @@ export class AuthService {
       sub: userLogin.usuario,
       id: buscaUser.id,
       company_id: buscaUser.company?.id ?? null,
+      role: buscaUser.role,
     };
 
     return {
       id: buscaUser.id,
       nome: buscaUser.nome,
       usuario: userLogin.usuario,
+      role: buscaUser.role,
       senha: '',
       token: `Bearer ${this.jwtService.sign(payload)}`,
     };
   }
 
-  async registrar(dto: RegisterDto): Promise<User> {
+  async registrar(dto: RegisterDto): Promise<Omit<User, 'senha'>> {
     const cnpjLimpo = dto.cnpj.replace(/\D/g, '');
 
     if (cnpjLimpo.length !== 14)
@@ -119,12 +122,14 @@ export class AuthService {
         usuario: dto.usuario,
         senha: senhaCriptografada,
         company,
+        role: UserRole.USER,
       });
       user = await queryRunner.manager.save(User, user);
 
       await queryRunner.commitTransaction();
 
-      return user;
+      const { senha, ...resposta } = user;
+      return resposta;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

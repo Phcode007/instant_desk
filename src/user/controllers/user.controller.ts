@@ -41,8 +41,10 @@ export class UserController {
 
   @Post('/cadastrar')
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() user: User): Promise<User> {
-    return this.userService.create(user);
+  async create(@Body() user: User): Promise<Omit<User, 'senha'>> {
+    const created = await this.userService.create(user);
+    const { senha, ...resposta } = created;
+    return resposta;
   }
 
   @UseGuards(JwtAuthGuard)

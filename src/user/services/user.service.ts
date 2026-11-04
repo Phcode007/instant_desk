@@ -35,6 +35,15 @@ export class UserService {
     );
   }
 
+  async findForAuthentication(id: number): Promise<User | null> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.company', 'company')
+      .select(['user.id', 'user.usuario', 'user.role', 'company.id'])
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
   async findAll(companyId: number | null): Promise<User[]> {
     const id = this.checkCompanyId(companyId);
 
@@ -157,6 +166,7 @@ export class UserService {
     await this.companyService.findById(user.company.id);
 
     user.senha = await this.bcrypt.criptografarSenha(user.senha);
+    user.role = UserRole.USER;
     return await this.userRepository.save(user);
   }
 }

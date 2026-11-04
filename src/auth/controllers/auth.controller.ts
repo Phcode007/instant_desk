@@ -27,7 +27,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post('/registrar')
-  registrar(@Body() dto: RegisterDto): Promise<User> {
+  registrar(@Body() dto: RegisterDto): Promise<Omit<User, 'senha'>> {
     return this.authService.registrar(dto);
   }
 }
