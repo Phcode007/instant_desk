@@ -1,5 +1,6 @@
 import { Controller, Get, Res } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import type { Response } from 'express';
 
 @Controller()
 export class AppController {
@@ -7,7 +8,7 @@ export class AppController {
 
   @ApiExcludeEndpoint()
   @Get()
-  async redirect(@Res() resposta: any) {
-    return resposta.redirect('/swagger');
+  redirect(@Res() resposta: Response): void {
+    resposta.redirect('/swagger');
   }
 }

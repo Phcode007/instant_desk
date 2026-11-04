@@ -29,7 +29,7 @@ export class AuthService {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<any> {
+  async validateUser(username: string, password: string): Promise<User | null> {
     const buscaUser = await this.userService.findByUsuario(username);
 
     if (!buscaUser)
