@@ -7,6 +7,7 @@ import { Ticket } from '../../ticket/entities/ticket.entity';
 import { User } from '../../user/entities/user.entity';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Attachment } from '../../attachment/entities/attachment.entity';
+import { AddUserRole1762214400000 } from '../migrations/1762214400000-AddUserRole';
 
 @Injectable()
 export class DevService implements TypeOrmOptionsFactory {
@@ -27,6 +28,8 @@ export class DevService implements TypeOrmOptionsFactory {
         Comment,
         Attachment,
       ],
+      migrations: [AddUserRole1762214400000],
+      migrationsRun: true,
       synchronize: true,
     };
   }

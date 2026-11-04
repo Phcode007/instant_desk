@@ -10,6 +10,7 @@ import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Company } from '../../company/entities/company.entity';
 import { Comment } from '../../comment/entities/comment.entity';
+import { UserRole } from '../enums/user-role.enum';
 
 @Entity({ name: 'tb_users' })
 export class User {
@@ -30,6 +31,10 @@ export class User {
   @Column({ length: 255, nullable: false })
   @ApiProperty()
   senha!: string;
+
+  @Column({ type: 'varchar', length: 16, default: UserRole.USER })
+  @ApiProperty({ enum: UserRole, default: UserRole.USER })
+  role!: UserRole;
 
   @ApiProperty({ type: () => Ticket })
   @OneToMany(() => Ticket, (ticket) => ticket.user)

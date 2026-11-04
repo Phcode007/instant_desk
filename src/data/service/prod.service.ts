@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
+import { AddUserRole1762214400000 } from '../migrations/1762214400000-AddUserRole';
 
 @Injectable()
 export class ProdService implements TypeOrmOptionsFactory {
@@ -14,6 +15,8 @@ export class ProdService implements TypeOrmOptionsFactory {
       },
       synchronize: true,
       autoLoadEntities: true,
+      migrations: [AddUserRole1762214400000],
+      migrationsRun: true,
     };
   }
 }
