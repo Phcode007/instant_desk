@@ -10,6 +10,7 @@ import { Attachment } from '../../attachment/entities/attachment.entity';
 import { AddUserRole1762214400000 } from '../migrations/1762214400000-AddUserRole';
 import { UserRoleAudit } from '../../user/entities/user-role-audit.entity';
 import { CreateUserRoleAudits1762214401000 } from '../migrations/1762214401000-CreateUserRoleAudits';
+import { SeedCompanyTicketDefaults1762472400000 } from '../migrations/1762472400000-SeedCompanyTicketDefaults';
 
 @Injectable()
 export class DevService implements TypeOrmOptionsFactory {
@@ -31,7 +32,11 @@ export class DevService implements TypeOrmOptionsFactory {
         Attachment,
         UserRoleAudit,
       ],
-      migrations: [AddUserRole1762214400000, CreateUserRoleAudits1762214401000],
+      migrations: [
+        AddUserRole1762214400000,
+        CreateUserRoleAudits1762214401000,
+        SeedCompanyTicketDefaults1762472400000,
+      ],
       migrationsRun: true,
       synchronize: true,
     };

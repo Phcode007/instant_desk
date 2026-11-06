@@ -8,10 +8,12 @@ import { AuthService } from './services/auth.service';
 import { AuthController } from './controllers/auth.controller';
 import { LocalStrategy } from './strategy/local.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { CompanyModule } from '../company/company.module';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
+    CompanyModule,
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
