@@ -24,7 +24,20 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
-  app.enableCors();
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  const allowedOrigins = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (isProduction && allowedOrigins.length === 0) {
+    throw new Error('CORS_ORIGINS precisa estar configurada em produção.');
+  }
+
+  app.enableCors({
+    origin: isProduction ? allowedOrigins : true,
+  });
 
   await app.listen(process.env.PORT ?? 4000);
 }
